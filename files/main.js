@@ -1,22 +1,15 @@
 var chartDom = document.getElementById("main");
-var myChart = echarts.init(chartDom, null, 
-    // 通过svg渲染，可以一试，反正兼容不了一点
-    // {renderer: 'svg'}
-);
+var myChart = echarts.init(chartDom, null, );
 var rootStyles = getComputedStyle(document.documentElement);
+var parentMaps = new Array(); // 维护一个 array，用于记录地图路径
 option = null;
-
-var mainColor = '#f3f8ff';
-var textColor = '#9da5b3';
-var borderColor = '#029fd4';
-var spotColor = '#ff9070';
-var activeColor = '#fff';
-
 // 把css变量抓过来，方便修改
-mainColor = rootStyles.getPropertyValue('--mainColor');
-textColor = rootStyles.getPropertyValue('--textColor');
-borderColor = rootStyles.getPropertyValue('--borderColor');
-spotColor = rootStyles.getPropertyValue('--spotColor');
+var mainColor = rootStyles.getPropertyValue('--mainColor');
+var textColor = rootStyles.getPropertyValue('--textColor');
+var borderColor = rootStyles.getPropertyValue('--borderColor');
+var spotColor = rootStyles.getPropertyValue('--spotColor');
+var locSpotColor = rootStyles.getPropertyValue('--locSpotColor');
+var activeColor = rootStyles.getPropertyValue('--activeColor');
 
 // 判断当前操作系统是否为移动设备
 var os = function () {
@@ -37,8 +30,26 @@ var os = function () {
     };
 }();
 
+// var map=echarts.getMap('china').geoJson.features;
+// var mapData = {}, dataTemp = convertData();
+// for(var i=0;i<map.length;i++){
+//     // console.log(map[i].properties.name);
+//     mapData[map[i].properties.name] = 0;
+// }
+// for(var i=0;i<dataTemp.length;i++){
+//     mapData[dataTemp[i].value[3]] += 1;
+// }
+// function getMapData(){
+//     var mapTemp = [];
+//     for(var key in mapData){
+//         mapTemp.push({name:key,value:mapData[key]});
+//     }
+//     console.log(mapTemp);
+//     return mapTemp;
+// }
+
 option = {
-    graphic: [{
+    graphic: [{//标题
         type: 'text', // 图形类型为文本
         left: 'center', // 文本水平居中
         top: 15, // 文本距离顶部的距离
@@ -47,7 +58,6 @@ option = {
             rich: {
                 a: {
                     fontSize: '22px',
-                    // fontFamily: '宋体',
                     fill: textColor, // 字体颜色
                     stroke: borderColor, // 描边颜色
                     lineWidth: 2, // 描边宽度
@@ -63,24 +73,7 @@ option = {
         },
         z:99,
       }],
-    tooltip: {
-        trigger: 'item',
-        // triggerOn:'mousemove',
-        hideDelay: 300,
-        confine: true, // 是否约束 content 在 viewRect 中。默认 false 是为了兼容以前版本。
-        borderColor : '#fff',
-        textStyle: {
-            fontWeight: 'regular',
-            fontFamily: 'Yahei',
-            fontSize: 22,
-        },
-        formatter: function (params) { 
-            return params.name 
-                + ' - ' + params.value[3].split(' ')[1] + '<br/>' 
-                + params.value[2]; 
-        }
-    },
-    toolbox: {
+    toolbox: {//工具栏
         top: 15,
         left: 15,
         // orient: 'horizontal', //vertical
@@ -89,11 +82,7 @@ option = {
             myReturn:{
                 show: false,
                 icon: 'M20,11H7.4l4.3-4.3c0.4-0.4,0.4-1,0-1.4s-1-0.4-1.4,0L3.6,11.6c-0.4,0.4-0.4,1,0,1.4l6.7,6.7c0.4,0.4,1,0.4,1.4,0s0.4-1,0-1.4L7.4,13H20c0.6,0,1-0.4,1-1S20.6,11,20,11z',
-                // icon: 'M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z',
-                // icon :'M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8zm15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-4.5-.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5z',
-                // icon :'M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm3.5 7.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5z',
                 onclick: function () {
-                    option.geo.roam = true;
                     if(parentMaps.length > 0){
                         changeMap(parentMaps[parentMaps.length - 1]);
                         var popPlace=parentMaps.pop();
@@ -115,9 +104,6 @@ option = {
                     return table;
                 }
             },
-            // restore: {},
-            // saveAsImage: {},
-            // dataZoom: {},
         },
         iconStyle: {
             normal: {
@@ -126,21 +112,13 @@ option = {
             }
         },
     },
-    geo: {
-        // zoom: 1.2,
-        zoom: 2.5,
-        left: -100,
-        map: 'china',
-        label: {
-            normal: {
-                show: false
-            },
-            emphasis:{
-                show: false
-            }
-        },
-        //缩放
-        roam: true,
+    tooltip: {//提示框
+        hideDelay: 300,
+        borderColor : '#fff',
+    },
+    geo: {//地图
+        label: {emphasis:{show: false}},
+        roam: true,//移动缩放
         scaleLimit: {
             min: 1,
             max: 10,
@@ -148,58 +126,55 @@ option = {
         itemStyle: {
             normal: {
                 areaColor: mainColor,
-                borderColor: borderColor
+                borderColor: borderColor,
+                // borderWidth: 1.05,
             },
             emphasis: {
                 areaColor: activeColor,
-            }
-        },
-        // silent: true // 静默设为 true，则鼠标移至相应地区则不会显示省份名，点也不会有反应
-    },
-    series: [{
-        name: '学校',
-        type: 'scatter',
-        coordinateSystem: 'geo',
-        data: convertData(),
-        symbol: 'pin',
-        symbolSize: 30,
-        label: {
-            normal: {
-                formatter: '{b}',
-                // position: 'right',
-                show: true,
+                // focus: 'self',
             },
         },
-        itemStyle: {
-            normal: {color: spotColor}
+    },
+    series: [
+        {
+            // name: '学校',
+            dimensions: ['经度','纬度','姓名','位置'],
+            encode: {tooltip: [2,3]},
+            type: 'scatter',
+            coordinateSystem: 'geo',
+            data: convertData(),
+            symbol: 'pin',
+            symbolSize: 30,
+            label: {
+                formatter: '{b}',
+                show: true,
+            },
+            itemStyle: {color: spotColor},
         },
-
-    },],
+        {   
+            // name: '定位',
+            encode: {value: 2},
+            type: 'scatter',
+            coordinateSystem: 'geo',
+            data: [],
+            symbol: 'pin',
+            symbolSize: 30,
+            label: {
+                formatter: '{b}',
+                show: true,
+            },
+            itemStyle: {color: '#ff2e2ecc'},
+            
+        },
+    ],
+    legend: {
+        bottom: 5
+    },
 };
-var parentMaps = new Array(); // 维护一个 array，用于记录地图路径
-
-function checkUrl() {
-    var url = window.location.href;
-    if (url.indexOf('#') == -1) return 'china';
-    option.geo.zoom = 1;
-    option.geo.left = 'center';
-    place = url.substring(url.indexOf('#') + 1);
-    place = decodeURI(place);
-    console.log(place);
-    if (MAPS.indexOf(place) != -1) {
-        parentMaps.push('china');
-        return place;
-    }
-    else return 'china';
-};
-option.geo.map = checkUrl();
-
 if (option && typeof option === "object") {
-    myChart.setOption(option);
-    myChart.resize();
+    changeMap('china');
 }
-
-// 改变地图，传入新的地点
+// 改变地图
 function changeMap(newPlace) {
     if(newPlace != 'china'){
         option.graphic[0].style.text =
@@ -207,7 +182,6 @@ function changeMap(newPlace) {
         option.geo.zoom = 1;
         option.geo.left = 'center';
         option.toolbox.feature.myReturn.show = true;
-        // option.toolbox.feature.dataView.show = false;
     }
     else{
         option.graphic[0].style.text =
@@ -215,28 +189,31 @@ function changeMap(newPlace) {
         option.geo.zoom = 2.5;
         option.geo.left = -100;
         option.toolbox.feature.myReturn.show = false;
-        // option.toolbox.feature.dataView.show = true;
     }
     option.geo.map = newPlace;
     myChart.setOption(option, true);    //去除了缩放动画
 }
+
+// 按下
 myChart.on('click', function (params) {
+    console.log(params);
     if (params.name == '南海诸岛') {
         params.name = '海南';
+    }else if (params.name == 'China') {
+        params.name = 'china';
     }
-    if (MAPS.indexOf(params.name) != -1) {
+    if (echarts.getMap(params.name)) {
         parentMaps.push(option.geo.map);
         changeMap(params.name);
         return;
     }
     if (params.componentType === 'series') {
-        var newPlace = params.value[3].split(' ');
-        if (option.geo.map == 'china' && MAPS.indexOf(newPlace[0]) != -1) {
+        if (option.geo.map == 'china' && echarts.getMap(params.value[3][0])) {
             parentMaps.push(option.geo.map);
-            changeMap(newPlace[0]);
-        }else if(option.geo.map == '山东' && newPlace[1] == '济南市'){
+            changeMap(params.value[3][0]);
+        }else if(option.geo.map == '山东' && params.value[3][1] == '济南市'){
             parentMaps.push(option.geo.map);
-            changeMap(newPlace[1]);
+            changeMap('济南市');
         }
     }
     if (params.componentType === 'graphic'){
@@ -252,9 +229,9 @@ myChart.on('click', function (params) {
             return;
         }
         else if(answer=='sth' || answer=='史天鸿' || answer=='?' || answer=='？'){
-            alert("请输入如下代码：\n - 数据（或sjst）\n - 世界（或world）");
+            alert("请输入如下代码：\n - 数据（或data）\n - 世界（或world）");
         }
-        else if(answer=='sjst' || answer=='数据') {
+        else if(answer=='data' || answer=='数据') {
             option.toolbox.feature.dataView.show = true;
             myChart.setOption(option);
         }
@@ -271,15 +248,14 @@ if (navigator.geolocation && os.isPc) {
     navigator.geolocation.getCurrentPosition(successCallback);
 }
 function successCallback(position) {
-    option.series[0].data.push({
+    option.series[1].data.push({
         name: '我的位置', 
-        value: [position.coords.longitude, position.coords.latitude,'','某省 定位所在位置']
+        value: [position.coords.longitude, position.coords.latitude,['定位所在位置']]
     });
     myChart.setOption(option);
 }
 
 //数据视图
-
 function getTable(opt){
     var axisData = opt.series[0].data;//获取图形的data数组
     var series = opt.series;//获取series
@@ -294,9 +270,9 @@ function getTable(opt){
         num += 1;
         table += '<tr>'
             + '<td>' //学校位置
-                + series[0].data[i].value[3].split(' ')[0]+'省'
+                + series[0].data[i].value[3][0]+'省'
                 + '</td><td>'
-                + series[0].data[i].value[3].split(' ')[1]
+                + series[0].data[i].value[3][1]
             + '</td>'
             + '<td>' + series[0].data[i].name + '</td>'//学校
             + '<td>' + series[0].data[i].value[2] + '</td>'//姓名
@@ -324,13 +300,18 @@ function getTable(opt){
 // });
 // 
 
-// 监听zoom，近用于辅助设置scaleLimit，不要忘记注释掉
-// var zoomK=3;
-// myChart.on('georoam',function(params){
-//     var option = myChart.getOption();//获得option对象
-// 	if(params.zoom!=null&&params.zoom!=undefined){ //捕捉到缩放时
-//         console.log(option.geo[0].zoom);
-//         // option.geo[0].zoom*=params.zoom;
-//         myChart.setOption(option);//设置option
-// 	}
-// });
+// function checkUrl() {
+//     var url = window.location.href;
+//     if (url.indexOf('#') == -1) return 'china';
+//     option.geo.zoom = 1;
+//     option.geo.left = 'center';
+//     place = url.substring(url.indexOf('#') + 1);
+//     place = decodeURI(place);
+//     console.log(place);
+//     if (MAPS.indexOf(place) != -1) {
+//         parentMaps.push('china');
+//         return place;
+//     }
+//     else return 'china';
+// };
+// option.geo.map = checkUrl();
