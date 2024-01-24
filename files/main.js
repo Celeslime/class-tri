@@ -60,19 +60,15 @@ option = {
     toolbox: {//工具栏
         top: 15,
         left: 15,
-        // orient: 'horizontal', //vertical
+        // orient: 'vertical',
         itemSize: 28,
         feature: {
             myReturn:{
                 show: false,
                 icon: 'M20,11H7.4l4.3-4.3c0.4-0.4,0.4-1,0-1.4s-1-0.4-1.4,0L3.6,11.6c-0.4,0.4-0.4,1,0,1.4l6.7,6.7c0.4,0.4,1,0.4,1.4,0s0.4-1,0-1.4L7.4,13H20c0.6,0,1-0.4,1-1S20.6,11,20,11z',
                 onclick: function () {
-                    if(parentMaps.length > 0){
-                        changeMap(parentMaps[parentMaps.length - 1]);
-                        var popPlace=parentMaps.pop();
-						option.graphic[0].style.text = 
-							'{a|毕业蹭饭地图}\n\n{b|山东师大附中 2018 级 3 班'+(popPlace=='china'?'':' - '+popPlace)+'}';
-                    } 
+                    if(parentMaps.length > 0) 
+                        changeMap(parentMaps.pop());
                 }
             },
             dataView: { 
@@ -82,7 +78,7 @@ option = {
                 optionToContent: function(opt) {
                     var colName  = "学校位置";
                     var typeName = "姓名";
-                    var dataview = opt.toolbox[0].feature.dataView;  //获取dataview
+                    var dataview = opt.toolbox[0].feature.dataView;
                     var table = '<div style="position:absolute;top: 5px;left: 0px;right: 0px;line-height: 1.4em;text-align:center;font-size:14px;">'+dataview.title+'</div>'
                     table += getTable(opt,colName,typeName);
                     return table;
@@ -99,6 +95,7 @@ option = {
     tooltip: {//提示框
         hideDelay: 300,
         borderColor : '#fff',
+        position: os.isPc ? undefined:'top',
     },
     geo: {//地图
         label: {emphasis:{show: false}},
@@ -154,9 +151,7 @@ option = {
             itemStyle: {color: locSpotColor},
         },
     ],
-    legend: {
-        bottom: 5
-    },
+    legend: {},//图例：series拥有name时显示
 };
 if (option && typeof option === "object") {
     changeMap('china');
@@ -184,14 +179,16 @@ function changeMap(newPlace) {
 
 // 按下
 myChart.on('click', function (params) {
-    if (params.name == '南海诸岛') {
-        params.name = '海南';
-    }else if (params.name == 'China') {
-        params.name = 'china';
-    }
-    if (echarts.getMap(params.name)) {
-        parentMaps.push(option.geo.map);
-        changeMap(params.name);
+    if (params.componentType === 'geo'){
+        if (params.name == '南海诸岛') {
+            params.name = '海南';
+        }else if (params.name == 'China') {
+            params.name = 'china';
+        }
+        if (echarts.getMap(params.name)) {
+            parentMaps.push(option.geo.map);
+            changeMap(params.name);
+        }
         return;
     }
     if (params.componentType === 'series') {
@@ -202,6 +199,7 @@ myChart.on('click', function (params) {
             parentMaps.push(option.geo.map);
             changeMap('济南市');
         }
+        return;
     }
     if (params.componentType === 'graphic'){
         var answer=prompt(
@@ -226,6 +224,7 @@ myChart.on('click', function (params) {
             parentMaps.push(option.geo.map);
             changeMap('world');
         }
+        return;
     }
 });
 
@@ -268,7 +267,7 @@ function getTable(opt){
     return table;
 }
 
-//获取颜色阶级
+//获取色阶
 function midColor(color1, color2, weight) {
     var p = weight > 1 ? 1 : weight < 0 ? 0 : weight;
     var w1 = 0.04 + p * 0.4;
@@ -306,23 +305,6 @@ function getRegionsColor(){
     })
     return regionsColor;
 }
-// 由于拖拽地图也会触发 click 事件，所以这里判断一下鼠标按下和抬起的位置坐标变化
-// var downX, downY;
-// $('#main').mousedown(function (e) {
-//     downX = e.pageX;
-//     downY = e.pageY;
-// });
-// $('#main').mouseup(function (e) {
-//     var upX = e.pageX;
-//     var upY = e.pageY;
-//     var dltX = Math.abs(upX - downX);
-//     var dltY = Math.abs(upY - downY);
-//     if (dltX <= 5 && dltY <= 5 && parentMaps.length > 0) {
-//         changeMap(parentMaps[parentMaps.length - 1]);
-//         parentMaps.pop();
-//     }
-// });
-// 
 
 // function checkUrl() {
 //     var url = window.location.href;
