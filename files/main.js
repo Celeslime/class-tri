@@ -34,6 +34,7 @@ var os = function () {
 
 option = {
     graphic: [{//标题
+        name: '关于',
         type: 'text', // 图形类型为文本
         left: 'center', // 文本水平居中
         top: 15, // 文本距离顶部的距离
@@ -56,20 +57,21 @@ option = {
             },
         },
         z:99,
-      }],
+        tooltip: {position: 'bottom'}
+    }],
     toolbox: {//工具栏
         top: 15,
         left: 15,
-        // orient: 'vertical',
-        itemSize: 28,
+        orient: 'vertical',
+        itemSize: 24,
+        itemGap: 12,
         feature: {
             myReturn:{
-                show: false,
                 icon: 'M20,11H7.4l4.3-4.3c0.4-0.4,0.4-1,0-1.4s-1-0.4-1.4,0L3.6,11.6c-0.4,0.4-0.4,1,0,1.4l6.7,6.7c0.4,0.4,1,0.4,1.4,0s0.4-1,0-1.4L7.4,13H20c0.6,0,1-0.4,1-1S20.6,11,20,11z',
                 onclick: function () {
                     if(parentMaps.length > 0) 
                         changeMap(parentMaps.pop());
-                }
+                },
             },
             dataView: { 
                 show: false,
@@ -88,14 +90,17 @@ option = {
         iconStyle: {
             normal: {
                 borderColor: borderColor,
-                color: '#fff'
-            }
+                color: textColor,
+            },
+            emphasis:{
+                borderColor: borderColor,
+                color: activeColor,
+            },
         },
     },
     tooltip: {//提示框
         hideDelay: 300,
         borderColor : '#fff',
-        position: os.isPc ? undefined:'top',
     },
     geo: {//地图
         label: {emphasis:{show: false}},
@@ -115,6 +120,9 @@ option = {
             },
         },
         regions: getRegionsColor(),
+        tooltip: {
+            position: os.isPc ? undefined:'top',
+        }
     },
     series: [
         {
@@ -204,10 +212,10 @@ myChart.on('click', function (params) {
     if (params.componentType === 'graphic'){
         var answer=prompt(
             "关于：\n"+
-            "1. 点击学校橙色标记，列出该学校的同学名单\n"+
-            "2. 点击省/市地图，进入到相应省/市的地图\n"+
-            "3. 点击返回按钮回到上一级/关于/重置地图\n"+
-            "4. 图表使用 echarts 制作，地图资源源于网络\n\n"+
+            "    1. Trigger: 学校标记、地区地图等\n"+
+            "    2. 停留或长按 Trigger 查看详细信息\n"+
+            "    3. 点击 Trigger 进入下一级地图\n\n"+
+            "图表使用 Echarts 制作，地图源于网络\n"+
             "联系方式：鸿 微信号："
         ,"wx1575989756"); 
         if(answer=='wx1575989756'){
@@ -284,7 +292,7 @@ function midColor(color1, color2, weight) {
     return "#" + ("0" + r.toString(16)).slice(-2) + ("0" + g.toString(16)).slice(-2) + ("0" + b.toString(16)).slice(-2);
 }
 
-//各个地区颜色
+//各个地区颜色 及 tooltip
 function getRegionsColor(){
     var regionsColor = [];
     for(var key in mapData){
@@ -294,6 +302,17 @@ function getRegionsColor(){
                 normal: {
                     areaColor: midColor(spotColor, mainColor, mapData[key]/5)
                 },
+            },
+            tooltip:{
+                formatter(params){
+                    return '<span style="display:inline-block;margin-right:4px;border-radius:10px;width:10px;height:10px;background-color:'+ 
+                        midColor(spotColor, mainColor, mapData[params.name]/5)
+                        +';"></span> '
+                        + params.name 
+                        + '<span style="float:right;margin-left:20px;font-size:14px;color:#666;font-weight:900">' 
+                        + mapData[params.name] + '人</span>';
+                    // return params.name + '&nbsp&nbsp<b>' + mapData[params.name] + '人</b>';
+                }
             }
         });
     }
