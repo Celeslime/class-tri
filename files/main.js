@@ -39,7 +39,6 @@ option = {
         left: 'center', // 文本水平居中
         top: 15, // 文本距离顶部的距离
         style: { // 文本样式设置
-            text: '{a|毕业蹭饭地图}\n\n{b|山东师大附中 2018 级 3 班}',
             rich: {
                 a: {
                     fontSize: '22px',
@@ -88,14 +87,14 @@ option = {
             },
         },
         iconStyle: {
-            normal: {
-                borderColor: borderColor,
-                color: textColor,
-            },
-            emphasis:{
+            borderColor: borderColor,
+            color: textColor,
+        },
+        emphasis:{
+            iconStyle:{
                 borderColor: borderColor,
                 color: activeColor,
-            },
+            }
         },
     },
     tooltip: {//提示框
@@ -110,14 +109,14 @@ option = {
             max: 10,
         },
         itemStyle: {
-            normal: {
-                areaColor: midColor(spotColor, mainColor, 0),
-                borderColor: midColor(spotColor, mainColor, 2/5),
-                // borderWidth: 0,
-            },
-            emphasis: {
+            areaColor: midColor(spotColor, mainColor, 0),
+            borderColor: midColor(spotColor, mainColor, 2/5),
+            // borderWidth: 0,
+        },
+        emphasis: {
+            itemStyle: {
                 areaColor: activeColor,
-            },
+            }
         },
         regions: getRegionsColor(),
         tooltip: {
@@ -137,11 +136,25 @@ option = {
             label: {
                 formatter: '{b}',
                 show: true,
+                alignTo: 'edge',
+                edgeDistance: 10,
+
             },
             itemStyle: {color: spotColor},
             // emphasis:{ 
             //     focus: 'self',//与roam冲突
             // }
+            // labelLayout: function(params) {
+            //     console.log(params);
+            //     var dPos = posHandler.getDeltaPos(params);
+            //     return {
+            //         dx: dPos.dx,
+            //         dy: dPos.dy
+            //     }
+            // },
+            // labelLine: {
+            //     show: true,
+            // },
         },
         {   
             // name: '定位',
@@ -157,6 +170,18 @@ option = {
                 show: true,
             },
             itemStyle: {color: locSpotColor},
+            // labelLayout: function () {
+            //     return {
+            //       x: myChart.getWidth() - 100,
+            //       moveOverlap: 'shiftY'
+            //     };
+            // },
+            // labelLine: {
+            //     show: true,
+            // },
+            // emphasis: {
+            //     focus: 'self',//与roam冲突
+            // }
         },
     ],
     legend: {},//图例：series拥有name时显示
@@ -169,16 +194,19 @@ if (option && typeof option === "object") {
 function changeMap(newPlace) {
     if(newPlace != 'china'){
         option.graphic[0].style.text =
-			'{a|毕业蹭饭地图}\n\n{b|山东师大附中 2018 级 3 班 - '+newPlace+'}';
+            '{a|毕业蹭饭地图}\n\n{b|山师大附中 2018 级 3 班'+
+                ' - '+newPlace+(mapData[newPlace]?' '+mapData[newPlace]+' 人':'')
+            +'}';
         option.geo.zoom = 1;
         option.geo.left = 'center';
         option.toolbox.feature.myReturn.show = true;
     }
     else{
         option.graphic[0].style.text =
-			'{a|毕业蹭饭地图}\n\n{b|山东师大附中 2018 级 3 班}';
+			'{a|毕业蹭饭地图}\n\n{b|山东师范大学附属中学 2018 级 3 班}';
         option.geo.zoom = 2.5;
         option.geo.left = -100;
+        // option.geo.right = 150;
         option.toolbox.feature.myReturn.show = false;
     }
     option.geo.map = newPlace;
@@ -299,9 +327,7 @@ function getRegionsColor(){
         regionsColor.push({
             name:key,
             itemStyle:{
-                normal: {
-                    areaColor: midColor(spotColor, mainColor, mapData[key]/5)
-                },
+                areaColor: midColor(spotColor, mainColor, mapData[key]/5)
             },
             tooltip:{
                 formatter(params){
@@ -319,7 +345,7 @@ function getRegionsColor(){
     regionsColor.push({    //隐藏海南诸岛
         name:'南海诸岛',
         itemStyle:{
-            normal:{opacity:0}
+            opacity:0
         }
     })
     return regionsColor;
