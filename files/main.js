@@ -3,6 +3,8 @@ var myChart = echarts.init(chartDom, null, );
 var rootStyles = getComputedStyle(document.documentElement);
 var parentMaps = new Array(); // 维护一个 array，用于记录地图路径
 option = null;
+// myChart.showLoading();
+
 // 把css变量抓过来，方便修改
 var mainColor = rootStyles.getPropertyValue('--mainColor');
 var textColor = rootStyles.getPropertyValue('--textColor');
@@ -29,24 +31,6 @@ var os = function () {
         isPc: isPc
     };
 }();
-
-// var map=echarts.getMap('china').geoJson.features;
-// var mapData = {}, dataTemp = convertData();
-// for(var i=0;i<map.length;i++){
-//     // console.log(map[i].properties.name);
-//     mapData[map[i].properties.name] = 0;
-// }
-// for(var i=0;i<dataTemp.length;i++){
-//     mapData[dataTemp[i].value[3]] += 1;
-// }
-// function getMapData(){
-//     var mapTemp = [];
-//     for(var key in mapData){
-//         mapTemp.push({name:key,value:mapData[key]});
-//     }
-//     console.log(mapTemp);
-//     return mapTemp;
-// }
 
 option = {
     graphic: [{//标题
@@ -125,15 +109,15 @@ option = {
         },
         itemStyle: {
             normal: {
-                areaColor: mainColor,
-                borderColor: borderColor,
-                // borderWidth: 1.05,
+                areaColor: midColor(spotColor, mainColor, 0),
+                borderColor: midColor(spotColor, mainColor, 2/5),
+                // borderWidth: 0,
             },
             emphasis: {
                 areaColor: activeColor,
-                // focus: 'self',
             },
         },
+        regions: getRegionsColor(),
     },
     series: [
         {
@@ -142,7 +126,7 @@ option = {
             encode: {tooltip: [2,3]},
             type: 'scatter',
             coordinateSystem: 'geo',
-            data: convertData(),
+            data: dataTemp,
             symbol: 'pin',
             symbolSize: 30,
             label: {
@@ -150,10 +134,14 @@ option = {
                 show: true,
             },
             itemStyle: {color: spotColor},
+            // emphasis:{ 
+            //     focus: 'self',//与roam冲突
+            // }
         },
         {   
             // name: '定位',
-            encode: {value: 2},
+            dimensions: ['经度','纬度'],
+            encode: {tooltip: [0,1]},
             type: 'scatter',
             coordinateSystem: 'geo',
             data: [],
@@ -163,8 +151,7 @@ option = {
                 formatter: '{b}',
                 show: true,
             },
-            itemStyle: {color: '#ff2e2ecc'},
-            
+            itemStyle: {color: locSpotColor},
         },
     ],
     legend: {
@@ -174,6 +161,7 @@ option = {
 if (option && typeof option === "object") {
     changeMap('china');
 }
+
 // 改变地图
 function changeMap(newPlace) {
     if(newPlace != 'china'){
@@ -196,7 +184,6 @@ function changeMap(newPlace) {
 
 // 按下
 myChart.on('click', function (params) {
-    console.log(params);
     if (params.name == '南海诸岛') {
         params.name = '海南';
     }else if (params.name == 'China') {
@@ -240,7 +227,6 @@ myChart.on('click', function (params) {
             changeMap('world');
         }
     }
-    // console.log(params);
 });
 
 // 获取我的位置
@@ -250,7 +236,7 @@ if (navigator.geolocation && os.isPc) {
 function successCallback(position) {
     option.series[1].data.push({
         name: '我的位置', 
-        value: [position.coords.longitude, position.coords.latitude,['定位所在位置']]
+        value: [position.coords.longitude.toFixed(4), position.coords.latitude.toFixed(4)]
     });
     myChart.setOption(option);
 }
@@ -282,6 +268,44 @@ function getTable(opt){
     return table;
 }
 
+//获取颜色阶级
+function midColor(color1, color2, weight) {
+    var p = weight > 1 ? 1 : weight < 0 ? 0 : weight;
+    var w1 = 0.04 + p * 0.4;
+    var w2 = 1 - w1;
+    var r1 = parseInt(color1.slice(1, 3), 16);
+    var g1 = parseInt(color1.slice(3, 5), 16);
+    var b1 = parseInt(color1.slice(5, 7), 16);
+    var r2 = parseInt(color2.slice(1, 3), 16);
+    var g2 = parseInt(color2.slice(3, 5), 16);
+    var b2 = parseInt(color2.slice(5, 7), 16);
+    var r = Math.round(r1 * w1 + r2 * w2);
+    var g = Math.round(g1 * w1 + g2 * w2);
+    var b = Math.round(b1 * w1 + b2 * w2);
+    return "#" + ("0" + r.toString(16)).slice(-2) + ("0" + g.toString(16)).slice(-2) + ("0" + b.toString(16)).slice(-2);
+}
+
+//各个地区颜色
+function getRegionsColor(){
+    var regionsColor = [];
+    for(var key in mapData){
+        regionsColor.push({
+            name:key,
+            itemStyle:{
+                normal: {
+                    areaColor: midColor(spotColor, mainColor, mapData[key]/5)
+                },
+            }
+        });
+    }
+    regionsColor.push({    //隐藏海南诸岛
+        name:'南海诸岛',
+        itemStyle:{
+            normal:{opacity:0}
+        }
+    })
+    return regionsColor;
+}
 // 由于拖拽地图也会触发 click 事件，所以这里判断一下鼠标按下和抬起的位置坐标变化
 // var downX, downY;
 // $('#main').mousedown(function (e) {

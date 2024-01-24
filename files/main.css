@@ -2,13 +2,12 @@
 	--mainColor:  #f3f8ff;
 	--textColor:  #ffffff;
 	--borderColor: #06dce3;
-	--backgroundColor:  #08dce0;
 	--spotColor:  #ff5b2ecc;
 	--locSpotColor: #ff2e2ecc;
 	--activeColor: #ffffff;
 }
 body{
-	background: linear-gradient(135deg, var(--borderColor), var(--backgroundColor));
+	background-color: var(--borderColor);
 	margin: 0;
 }
 h4{

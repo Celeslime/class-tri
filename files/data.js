@@ -33,7 +33,7 @@ DATA = [
     { name: '山东第二医科大学', value: ['张沛然','田子萱','张策'], loc: [119.040166,36.672282], city: '山东 潍坊市' },
 ];
 
-var convertData = function () {
+var mapData = {}, dataTemp = function () {
     var res = [];
     for (var i = 0; i < DATA.length; i++) {
         if (DATA[i]['loc']) {
@@ -44,4 +44,15 @@ var convertData = function () {
         }
     }
     return res;
-};
+}();
+
+for(var i=0;i<dataTemp.length;i++){
+    if(dataTemp[i].value[3][0] in mapData)
+        mapData[dataTemp[i].value[3][0]] += dataTemp[i].value[2].length;
+    else
+        mapData[dataTemp[i].value[3][0]] = dataTemp[i].value[2].length;
+    if(dataTemp[i].value[3][1] in mapData)
+        mapData[dataTemp[i].value[3][1]] += dataTemp[i].value[2].length;
+    else
+        mapData[dataTemp[i].value[3][1]] = dataTemp[i].value[2].length;
+}
