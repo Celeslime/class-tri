@@ -34,12 +34,13 @@ var os = function () {
 
 option = {
     title:{
-        left: 'center',
         top: 10,
+        left: os.isPc?'center':10,
+        textAlign: os.isPc?undefined:'left',
         text: '毕业蹭饭地图',
         textStyle: {
             color: textColor,
-            fontSize: 22,
+            fontSize: 25,
             fontWeight: 'normal',
         },
         subtextStyle: {
@@ -53,15 +54,19 @@ option = {
         textBorderColor: borderColor,
         textBorderWidth: 2,
     },
+    backgroundColor: borderColor,
     toolbox: {//工具栏
-        top: 15,
-        left: 15,
-        orient: 'vertical',
+        top: os.isPc?10:undefined,
+        bottom: os.isPc?undefined:10,
+        left: os.isPc?10:undefined,
+        right: os.isPc?undefined:10,
+        orient: os.isPc?'horizontal':'vertical',
         itemSize: 24,
         itemGap: 12,
         feature: {
             myReturn:{
-                icon: 'M20,11H7.4l4.3-4.3c0.4-0.4,0.4-1,0-1.4s-1-0.4-1.4,0L3.6,11.6c-0.4,0.4-0.4,1,0,1.4l6.7,6.7c0.4,0.4,1,0.4,1.4,0s0.4-1,0-1.4L7.4,13H20c0.6,0,1-0.4,1-1S20.6,11,20,11z',
+                title: '返回',
+                icon: 'image://./image/return.svg',
                 onclick: function () {
                     if(parentMaps.length > 0) 
                         changeMap(parentMaps.pop());
@@ -69,7 +74,7 @@ option = {
             },
             dataView: { 
                 show: false,
-                title: '',
+                title: '数据视图',
                 readOnly: true,
                 optionToContent: function(opt) {
                     var colName  = "学校位置";
@@ -80,10 +85,28 @@ option = {
                     return table;
                 }
             },
+            saveAsImage: {
+                // show: false,
+                title: '保存图片',
+                icon: 'image://./image/download.svg',
+                pixelRatio: 7,
+                iconStyle:{
+                    color: '#fff',
+                },
+                color: '#fff',
+            },
         },
         iconStyle: {
             borderColor: borderColor,
             color: textColor,
+        },
+        showTitle: false,
+        tooltip:{
+            show: os.isPc,
+            position: undefined,
+            formatter: function (param) {
+                return '<div>' + param.title + '</div>'; // 自定义的 DOM 结构
+            },
         },
         emphasis:{
             iconStyle:{
@@ -96,6 +119,9 @@ option = {
         hideDelay: 300,
         borderColor : '#fff',
     },
+    // labelLayout: {
+    //     hideOverlap: true,
+    // },
     geo: {//地图
         label: {emphasis:{show: false}},// 我也不明白 这是哪里来的
         roam: true,//移动缩放

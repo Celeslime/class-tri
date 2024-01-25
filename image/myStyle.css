@@ -6,10 +6,6 @@
 	--locSpotColor: #ff2e2ecc;
 	--activeColor: #ffffff;
 }
-body{
-	background-color: var(--borderColor);
-	margin: 0;
-}
 h4{
 	color: #535353!important;
 }
