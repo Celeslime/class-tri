@@ -1,18 +1,82 @@
-# 山师附中 2018 级 3 班毕业蹭饭地图
+#标题1
+##标题2
+###标题3
+####标题4
+#####标题5
+######标题6
 
-#### 介绍
-山师附中 2018 级 3 班毕业蹭饭地图，使用 [echarts](https://echarts.apache.org/zh/index.html) 绘制.   
-网址： [https://celeslime.github.io/class-tri/](https://celeslime.github.io/class-tri/)
+<iframe src="//player.bilibili.com/player.html?aid=327623069&bvid=BV1JA411h7Gw&cid=171385214&p=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>
 
-#### 使用说明
+> 这是一个引用
+1. 这是一个有序列表
+2. 这也是一个有序列表
+3. 这是一个有序列表
 
-1.  按下学校橙色标记，列出该学校的同学名单.
-2.  点击省/市地图，进入到相应省/市的地图.
-3.  点击返回按钮回到上一级.
-4.  图表使用 echarts 制作，地图资源源于网络.
+* 这是一个无序列表
+* * 这是一个无序列表
+* * * 这是最内层的无序列表
 
-#### 参与贡献
+- 这也是一个无序列表
+- - 这是另一个无序列表
+- - - 这是最内层的无序列表  
 
-1.  Fork 本仓库、Pull Request
-2.  联系我，共同完善：微信 鸿 wx1575989756
-<!-- #### 特技 -->
+横线
+***
+---
+
+- [ ] 这是一个未完成的任务列表
+- [x] 这是一个完成的任务列表
+
+**这是粗体文本**
+*这是斜体文本*
+~~这是删除线~~
+`行内代码`
+==高亮==
+行内公式 $E=mc^2$
+上标^123^
+下标~123~
+表情:smile:
+
+
+[链接](https://www.baidu.com "tooltip")
+[引用链接][id]
+[标题链接](#html)
+![图片](https://p1.music.126.net/RHLLllNvWszMyF3LtsIr6A==/109951168660026224.jpg?param=180y180 '图片')
+
+```python
+def hello():
+    print("Hello, World!")
+```
+
+$$
+E = mc^2
+$$
+
+| 表头1 | 表头2 | 表头3 |
+| ---: | --- | :---|
+| 单元格1 | 单元格2 | 单元格3 |
+| 单元格4 | 单元格5 | 单元格6 |
+
+脚注[^1]
+
+### html
+<u>下划线</u>
+<i>斜体</i>
+<b>粗体</b>
+<s>删除线</s>
+123<sub>下标</sub>
+123<sup>上标</sup>
+<kbd>键盘输入</kbd>
+<code>计算机代码</code>
+<var>计算机变量</var>
+<samp>计算机代码样本</samp>
+<p>这是一个段落</p>
+<pre>这是一个代码块</pre>
+<blockquote>这是一个块引用</blockquote>
+<img src="https://p1.music.126.net/RHLLllNvWszMyF3LtsIr6A==/109951168660026224.jpg?param=180y180" alt="图片" title="图片">
+<br><hr>
+
+
+[^1]:脚注内容  
+
+[id]: baidu.com  "Optional Title Here"
