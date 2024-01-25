@@ -33,31 +33,26 @@ var os = function () {
 }();
 
 option = {
-    graphic: [{//标题
-        name: '关于',
-        type: 'text', // 图形类型为文本
-        left: 'center', // 文本水平居中
-        top: 15, // 文本距离顶部的距离
-        style: { // 文本样式设置
-            rich: {
-                a: {
-                    fontSize: '22px',
-                    fill: textColor, // 字体颜色
-                    stroke: borderColor, // 描边颜色
-                    lineWidth: 2, // 描边宽度
-					textAlign: 'center',// 内容居中
-                },
-                b: {
-                    fontSize: '15px',
-                    fill: textColor, // 字体颜色
-                    stroke: borderColor, // 描边颜色
-                    lineWidth: 2, // 描边宽度
-                },
-            },
+    title:{
+        left: 'center',
+        top: 10,
+        text: '毕业蹭饭地图',
+        textStyle: {
+            color: textColor,
+            fontSize: 22,
+            fontWeight: 'normal',
         },
-        z:99,
-        tooltip: {position: 'bottom'}
-    }],
+        subtextStyle: {
+            color: textColor,
+            fontSize: 15,
+            fontWeight: 'normal',
+        },
+        triggerEvent: true,
+    },
+    textStyle: {
+        textBorderColor: borderColor,
+        textBorderWidth: 2,
+    },
     toolbox: {//工具栏
         top: 15,
         left: 15,
@@ -102,7 +97,7 @@ option = {
         borderColor : '#fff',
     },
     geo: {//地图
-        label: {emphasis:{show: false}},
+        label: {emphasis:{show: false}},// 我也不明白 这是哪里来的
         roam: true,//移动缩放
         scaleLimit: {
             min: 1,
@@ -125,10 +120,10 @@ option = {
     },
     series: [
         {
+            type: 'scatter',
             // name: '学校',
             dimensions: ['经度','纬度','姓名','位置'],
             encode: {tooltip: [2,3]},
-            type: 'scatter',
             coordinateSystem: 'geo',
             data: dataTemp,
             symbol: 'pin',
@@ -136,31 +131,14 @@ option = {
             label: {
                 formatter: '{b}',
                 show: true,
-                alignTo: 'edge',
-                edgeDistance: 10,
-
             },
             itemStyle: {color: spotColor},
-            // emphasis:{ 
-            //     focus: 'self',//与roam冲突
-            // }
-            // labelLayout: function(params) {
-            //     console.log(params);
-            //     var dPos = posHandler.getDeltaPos(params);
-            //     return {
-            //         dx: dPos.dx,
-            //         dy: dPos.dy
-            //     }
-            // },
-            // labelLine: {
-            //     show: true,
-            // },
         },
         {   
+            type: 'scatter',
             // name: '定位',
             dimensions: ['经度','纬度'],
             encode: {tooltip: [0,1]},
-            type: 'scatter',
             coordinateSystem: 'geo',
             data: [],
             symbol: 'pin',
@@ -170,43 +148,25 @@ option = {
                 show: true,
             },
             itemStyle: {color: locSpotColor},
-            // labelLayout: function () {
-            //     return {
-            //       x: myChart.getWidth() - 100,
-            //       moveOverlap: 'shiftY'
-            //     };
-            // },
-            // labelLine: {
-            //     show: true,
-            // },
-            // emphasis: {
-            //     focus: 'self',//与roam冲突
-            // }
         },
     ],
     legend: {},//图例：series拥有name时显示
 };
-if (option && typeof option === "object") {
-    changeMap('china');
-}
+changeMap('china');
 
 // 改变地图
 function changeMap(newPlace) {
     if(newPlace != 'china'){
-        option.graphic[0].style.text =
-            '{a|毕业蹭饭地图}\n\n{b|山师大附中 2018 级 3 班'+
-                ' - '+newPlace+(mapData[newPlace]?' '+mapData[newPlace]+' 人':'')
-            +'}';
+        option.title.subtext = '山师大附中 2018 级 3 班'+' - '+newPlace+(mapData[newPlace]?' '+mapData[newPlace]+' 人':'')
         option.geo.zoom = 1;
-        option.geo.left = 'center';
+        option.geo.center = undefined;
+
         option.toolbox.feature.myReturn.show = true;
     }
     else{
-        option.graphic[0].style.text =
-			'{a|毕业蹭饭地图}\n\n{b|山东师范大学附属中学 2018 级 3 班}';
+        option.title.subtext = '山东师范大学附属中学 2018 级 3 班';
         option.geo.zoom = 2.5;
-        option.geo.left = -100;
-        // option.geo.right = 150;
+        option.geo.center = [117,35.5];
         option.toolbox.feature.myReturn.show = false;
     }
     option.geo.map = newPlace;
@@ -237,7 +197,7 @@ myChart.on('click', function (params) {
         }
         return;
     }
-    if (params.componentType === 'graphic'){
+    if (params.componentType === 'title'){
         var answer=prompt(
             "关于：\n"+
             "    1. Trigger: 学校标记、地区地图等\n"+
@@ -303,7 +263,8 @@ function getTable(opt){
     return table;
 }
 
-//获取色阶
+// 获取色阶  这一部分可以使用 visulMap + seriesIndex 实现
+//           下面是AI的, 本人比较懒, 不想重新写
 function midColor(color1, color2, weight) {
     var p = weight > 1 ? 1 : weight < 0 ? 0 : weight;
     var w1 = 0.04 + p * 0.4;
@@ -327,7 +288,7 @@ function getRegionsColor(){
         regionsColor.push({
             name:key,
             itemStyle:{
-                areaColor: midColor(spotColor, mainColor, mapData[key]/5)
+                areaColor: midColor(spotColor, mainColor, mapData[key]/5),
             },
             tooltip:{
                 formatter(params){
