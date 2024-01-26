@@ -66,7 +66,7 @@ option = {
         feature: {
             myReturn:{
                 title: '返回',
-                icon: 'image://./image/return.svg',
+                icon: 'image://./images/return.svg',
                 onclick: function () {
                     if(parentMaps.length > 0) 
                         changeMap(parentMaps.pop());
@@ -86,9 +86,8 @@ option = {
                 }
             },
             saveAsImage: {
-                // show: false,
                 title: '保存图片',
-                icon: 'image://./image/download.svg',
+                icon: 'image://./images/download.svg',
                 pixelRatio: 7,
                 iconStyle:{
                     color: '#fff',
@@ -229,14 +228,19 @@ myChart.on('click', function (params) {
             "    1. Trigger: 学校标记、地区地图等\n"+
             "    2. 停留或长按 Trigger 查看详细信息\n"+
             "    3. 点击 Trigger 进入下一级地图\n\n"+
-            "图表使用 Echarts 制作，地图源于网络\n"+
-            "联系方式：鸿 微信号："
+            " - 图表使用 Echarts 制作\n"+
+            " - 地图源于网络 不具有参考意义\n"+
+            " - 联系方式: 鸿 微信号："
         ,"wx1575989756"); 
         if(answer=='wx1575989756'){
             return;
         }
         else if(answer=='sth' || answer=='史天鸿' || answer=='?' || answer=='？'){
-            alert("请输入如下代码：\n - 数据（或data）\n - 世界（或world）");
+            alert("请输入如下代码：\n"+
+                " - 数据 (或 data)\n"+
+                " - 世界 (或 world)\n"+
+                " - 浏览器 (或 browser)\n"
+            );
         }
         else if(answer=='data' || answer=='数据') {
             option.toolbox.feature.dataView.show = true;
@@ -245,6 +249,9 @@ myChart.on('click', function (params) {
         else if(answer=='world' || answer=='世界') {
             parentMaps.push(option.geo.map);
             changeMap('world');
+        }
+        else if(answer=='browser' || answer=='浏览器') {
+            alert('浏览器信息: \n'+navigator.userAgent)
         }
         return;
     }
