@@ -1,10 +1,11 @@
 :root {
-	--mainColor:  #f3f8ff;
-	--textColor:  #ffffff;
-	--borderColor: #06dce3;
-	--spotColor:  #ff5b2ecc;
-	--locSpotColor: #ff2e2ecc;
-	--activeColor: #ffffff;
+	/* 变量和颜色之间不要空格，否则老版本浏览器解析错误 */
+	--mainColor:#f3f8ff;
+	--textColor:#ffffff;
+	--borderColor:#06dce3;
+	--spotColor:#ff5b2ecc;
+	--locSpotColor:#ff2e2ecc;
+	--activeColor:#ffffff;
 }
 h4{
 	color: #535353!important;
