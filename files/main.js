@@ -145,19 +145,42 @@ option = {
     },
     series: [
         {
+            type: 'graph',
+            // name: '连线',
+            coordinateSystem: 'geo',
+            symbolSize: 3,
+            itemStyle: {
+                color: spotColor
+            },
+            lineStyle: {
+                color: spotColor,
+                curveness: -0.2
+            },
+            silent: true,
+            data: dataTemp,
+            links: linksTemp,
+        },
+        {
             type: 'scatter',
             // name: '学校',
             dimensions: ['经度','纬度','姓名','位置'],
             encode: {tooltip: [2,3]},
             coordinateSystem: 'geo',
-            data: dataTemp,
             symbol: 'pin',
             symbolSize: 30,
             label: {
                 formatter: '{b}',
                 show: true,
+                width: os.isPc? 80:40,
+                overflow: "truncate",
             },
             itemStyle: {color: spotColor},
+            emphasis: {
+                label: {
+                    width: 100,
+                }
+            },
+            data: dataTemp,
         },
         {   
             type: 'scatter',
@@ -165,7 +188,6 @@ option = {
             dimensions: ['经度','纬度'],
             encode: {tooltip: [0,1]},
             coordinateSystem: 'geo',
-            data: [],
             symbol: 'pin',
             symbolSize: 30,
             label: {
@@ -173,6 +195,7 @@ option = {
                 show: true,
             },
             itemStyle: {color: locSpotColor},
+            data: [],
         },
     ],
     legend: {},//图例：series拥有name时显示
