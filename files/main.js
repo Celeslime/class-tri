@@ -249,7 +249,7 @@ myChart.on('click', function (params) {
         var answer=prompt(
             "关于：\n"+
             "    1. Trigger: 学校标记、地区地图等\n"+
-            "    2. 停留或长按 Trigger 查看详细信息\n"+
+            "    2. 长按或停留 Trigger 查看详细信息\n"+
             "    3. 点击 Trigger 进入下一级地图\n\n"+
             " - 图表使用 Echarts 制作\n"+
             " - 地图源于网络 不具有参考意义\n"+
