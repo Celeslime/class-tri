@@ -1,8 +1,7 @@
 var chartDom = document.getElementById("main");
-var myChart = echarts.init(chartDom, null, );
+var myChart = echarts.init(chartDom);
 var rootStyles = getComputedStyle(document.documentElement);
 var parentMaps = new Array(); // 维护一个 array，用于记录地图路径
-option = null;
 // myChart.showLoading();
 
 // 把css变量抓过来，方便修改
@@ -32,7 +31,7 @@ var os = function () {
     };
 }();
 
-option = {
+var option = {
     title:{
         top: 10,
         left: os.isPc?'center':10,
@@ -64,12 +63,22 @@ option = {
         itemSize: 24,
         itemGap: 12,
         feature: {
-            myReturn:{
+            myReturn: {
+                // show: false,
                 title: '返回',
                 icon: 'image://./images/return.svg',
                 onclick: function () {
                     if(parentMaps.length > 0) 
                         changeMap(parentMaps.pop());
+                },
+            },
+            myPositon: {
+                show: os.isPc,
+                title: '获取位置信息',
+                icon: 'image://./images/position.svg',
+                onclick: function () {
+                    if (navigator.geolocation && os.isPc)
+                        navigator.geolocation.getCurrentPosition(successCallback);
                 },
             },
             dataView: { 
@@ -94,6 +103,69 @@ option = {
                 },
                 color: '#fff',
             },
+            myQRCode: {
+                show: os.isPc,
+                title: 'QRCode',
+                icon: 'image://./images/QRCode.svg',
+                onclick: function(){
+                    // 创建一个<a>标签
+                    var link = document.createElement('a');
+                    link.href = './images/QRCode.png';
+                    link.download = 'QRCode.png'; // 设置下载文件的名称
+                    // 将<a>标签添加到页面中
+                    document.body.appendChild(link);
+                    // 模拟点击<a>标签进行下载
+                    link.click();
+                    // 移除<a>标签
+                    document.body.removeChild(link);
+                    return;
+                }
+            },
+            myInfo: {
+                title: '关于',
+                icon: 'image://./images/info.svg',
+                onclick: function (){
+                    var answer=prompt(
+                        "关于：\n"+
+                        "    1. Trigger: 学校标记、地区地图等\n"+
+                        "    2. 长按或停留 Trigger 查看详细信息\n"+
+                        "    3. 点击 Trigger 进入下一级地图\n\n"+
+                        " - 图表使用 Echarts 制作\n"+
+                        " - 地图源于网络 不具有参考意义\n"+
+                        // " - https://github.com/celeslime/class-tri\n"+
+                        ' - $<HIDEN_MESSAGE="?">$\n'+
+                        " - 联系方式: 鸿 微信号："
+                    ,"wx1575989756"); 
+                    setTimeout(function(){
+                    if(answer=='wx1575989756'){
+                        return;
+                    }
+                    else if(answer=='sth' || answer=='史天鸿' || answer=='?' || answer=='？'){
+                        alert("请输入如下代码：\n"+
+                            " - 数据 (或 data)\n"+
+                            " - 世界 (或 world)\n"+
+                            " - 浏览器 (或 browser)\n"+
+                            ' - 项目 (或 github)\n'
+                        );
+                    }
+                    else if(answer=='data' || answer=='数据') {
+                        option.toolbox.feature.dataView.show = true;
+                        myChart.setOption(option);
+                    }
+                    else if(answer=='world' || answer=='世界') {
+                        parentMaps.push(option.geo.map);
+                        changeMap('world');
+                    }
+                    else if(answer=='browser' || answer=='浏览器') {
+                        alert('浏览器信息: \n'+navigator.userAgent)
+                    }
+                    else if(answer=='github' || answer=='项目') {
+                        window.open('https://github.com/celeslime/class-tri');
+                    }
+
+                    },1000)
+                }
+            },
         },
         iconStyle: {
             borderColor: borderColor,
@@ -101,9 +173,14 @@ option = {
         },
         showTitle: false,
         tooltip:{
-            show: os.isPc,
+            // show: os.isPc,
+            show: true,
+            position: os.isPc ? undefined : 'left',
             position: undefined,
             formatter: function (param) {
+                if(param.title=='QRCode'){
+                    return '<img src="./images/QRCode.png" height="120px">'
+                }
                 return '<div>' + param.title + '</div>'; // 自定义的 DOM 结构
             },
         },
@@ -122,7 +199,8 @@ option = {
     //     hideOverlap: true,
     // },
     geo: {//地图
-        label: {emphasis:{show: false}},// 我也不明白 这是哪里来的
+        map: 'china',
+        label: {emphasis:{show: false}},
         roam: true,//移动缩放
         scaleLimit: {
             min: 1,
@@ -141,25 +219,13 @@ option = {
         regions: getRegionsColor(),
         tooltip: {
             position: os.isPc ? undefined:'top',
-        }
+        },
+        // projection: {
+        //     project: (point) => [point[0] / 180 * Math.PI, -Math.log(Math.tan((Math.PI / 2 + point[1] / 180 * Math.PI) / 2))],
+        //     unproject: (point) => [point[0] * 180 / Math.PI, 2 * 180 / Math.PI * Math.atan(Math.exp(point[1])) - 90]
+        // }
     },
     series: [
-        {
-            type: 'graph',
-            // name: '连线',
-            coordinateSystem: 'geo',
-            symbolSize: 3,
-            itemStyle: {
-                color: spotColor
-            },
-            lineStyle: {
-                color: spotColor,
-                curveness: -0.2
-            },
-            silent: true,
-            data: dataTemp,
-            links: linksTemp,
-        },
         {
             type: 'scatter',
             // name: '学校',
@@ -177,10 +243,10 @@ option = {
             itemStyle: {color: spotColor},
             emphasis: {
                 label: {
-                    width: 100,
+                    width: 130,
                 }
             },
-            data: dataTemp,
+            data: spotTemp,
         },
         {   
             type: 'scatter',
@@ -195,30 +261,82 @@ option = {
                 show: true,
             },
             itemStyle: {color: locSpotColor},
-            data: [],
         },
+        {
+            type: 'graph',
+            // name: '关系',
+            coordinateSystem: 'geo',
+            symbolSize: 3,
+            itemStyle: {
+                color: spotColor
+            },
+            lineStyle: {
+                color: spotColor,
+                curveness: -0.2
+            },
+            silent: true,
+            data: spotTemp,
+            links: linksTemp,
+        },
+        {
+            type: 'treemap',
+            name: '中华人民共和国',
+            data: treeTemp,
+            leafDepth: 2,
+            z:999,
+            upperLabel: {
+                show: true,
+                height: 30
+            },
+            itemStyle: {
+                // borderColor: '#555',
+                // color: textColor,
+                borderWidth: 2,
+                borderColorSaturation: 0.6
+            },
+            colorSaturation: [0.35, 0.5],
+            levels: [{//国
+                },{//省份
+                },{//城市
+                },{//学校
+                },{//学生
+                    itemStyle: {
+                        borderWidth: 0,
+                        // borderColorSaturation: 0.6
+                    }
+                }
+            ]
+        }
     ],
-    legend: {},//图例：series拥有name时显示
+    legend: {
+        show: false,
+        bottom: 10,
+        selected:{
+            '中华人民共和国':false,
+        }
+    },//图例：series拥有name时显示
 };
-changeMap('china');
+changeMap();
 
 // 改变地图
-function changeMap(newPlace) {
+function changeMap(newPlace = 'china') {
     if(newPlace != 'china'){
-        option.title.subtext = '山师大附中 2018 级 3 班'+' - '+newPlace+(mapData[newPlace]?' '+mapData[newPlace]+' 人':'')
+        var parentMapsTemp = parentMaps.concat();
+        parentMapsTemp[0] = ''
+        parentMapsTemp.push(newPlace)
+        // if(parentMapsTemp[1])parentMapsTemp[1]+='省'
+        option.title.subtext ='山师附中 2018 级 3 班 '
+            + parentMapsTemp.join(' > ')+(mapData[newPlace]?' > '+mapData[newPlace]+'人':'')
         option.geo.zoom = 1;
         option.geo.center = undefined;
-
-        option.toolbox.feature.myReturn.show = true;
     }
     else{
         option.title.subtext = '山东师范大学附属中学 2018 级 3 班';
         option.geo.zoom = 2.5;
         option.geo.center = [117,35.5];
-        option.toolbox.feature.myReturn.show = false;
     }
     option.geo.map = newPlace;
-    myChart.setOption(option, true);    //去除了缩放动画
+    myChart.setOption(option, true);    //去除了roam动画
 }
 
 // 按下
@@ -235,7 +353,7 @@ myChart.on('click', function (params) {
         }
         return;
     }
-    if (params.componentType === 'series') {
+    if (params.componentType === 'series' && params.seriesType === 'scatter') {
         if (option.geo.map == 'china' && echarts.getMap(params.value[3][0])) {
             parentMaps.push(option.geo.map);
             changeMap(params.value[3][0]);
@@ -246,49 +364,22 @@ myChart.on('click', function (params) {
         return;
     }
     if (params.componentType === 'title'){
-        var answer=prompt(
-            "关于：\n"+
-            "    1. Trigger: 学校标记、地区地图等\n"+
-            "    2. 长按或停留 Trigger 查看详细信息\n"+
-            "    3. 点击 Trigger 进入下一级地图\n\n"+
-            " - 图表使用 Echarts 制作\n"+
-            " - 地图源于网络 不具有参考意义\n"+
-            " - 联系方式: 鸿 微信号："
-        ,"wx1575989756"); 
-        if(answer=='wx1575989756'){
+        if(parentMaps.length > 0){
+            changeMap(parentMaps.pop());
             return;
         }
-        else if(answer=='sth' || answer=='史天鸿' || answer=='?' || answer=='？'){
-            alert("请输入如下代码：\n"+
-                " - 数据 (或 data)\n"+
-                " - 世界 (或 world)\n"+
-                " - 浏览器 (或 browser)\n"
-            );
-        }
-        else if(answer=='data' || answer=='数据') {
-            option.toolbox.feature.dataView.show = true;
-            myChart.setOption(option);
-        }
-        else if(answer=='world' || answer=='世界') {
-            parentMaps.push(option.geo.map);
-            changeMap('world');
-        }
-        else if(answer=='browser' || answer=='浏览器') {
-            alert('浏览器信息: \n'+navigator.userAgent)
-        }
-        return;
     }
 });
 
 // 获取我的位置
-if (navigator.geolocation && os.isPc) {
-    navigator.geolocation.getCurrentPosition(successCallback);
-}
 function successCallback(position) {
-    option.series[1].data.push({
+    var positionGot = [position.coords.longitude.toFixed(4), position.coords.latitude.toFixed(4)]
+    option.series[1].data=[{
         name: '我的位置', 
-        value: [position.coords.longitude.toFixed(4), position.coords.latitude.toFixed(4)]
-    });
+        value: positionGot,
+    }];
+    option.geo.zoom = 4;
+    option.geo.center = positionGot;
     myChart.setOption(option);
 }
 

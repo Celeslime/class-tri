@@ -1,6 +1,6 @@
 DATA = [
     //Center
-    { name: '母校', value: ['山东师范大学附属中学'], loc: [117.041752,36.658272], city: '山东 济南市'},
+    { name: '山东师范大学附属中学', value: ['母校'], loc: [117.041752,36.658272], city: '山东 济南市'},
     //济
     { name: '山东大学', value: ['刘怡诺'], loc: [117.017885,36.651971], city: '山东 济南市' },
     { name: '哈尔滨工业大学', value: ['史天鸿'], loc: [122.089909,37.540047], city: '山东 威海市' },
@@ -36,36 +36,108 @@ DATA = [
     { name: '沈阳理工大学', value: ['高彩荀'], loc: [123.500795,41.733289], city: '辽宁 沈阳市' },
 ];
 
-var dataTemp = function () {
-    var res = [];
-    for (var i = 0; i < DATA.length; i++) {
-        if (DATA[i]['loc']) {
-            res.push({
-                name: DATA[i].name,
-                value: DATA[i]['loc'].concat([DATA[i].value], [DATA[i].city.split(' ')]),
-            });
-        }
+// scatter数据
+// name: 学校 value: 0、1坐标、2[姓名]、3[省市]
+var spotTemp = [];
+for (var i = 0; i < DATA.length; i++) {
+    if (DATA[i]['loc']) {
+        spotTemp.push({
+            name: DATA[i].name,
+            value: DATA[i]['loc'].concat([DATA[i].value], [DATA[i].city.split(' ')]),
+        });
     }
-    return res;
-}();
-
-var mapData = {};
-for(var i=0;i<dataTemp.length;i++){
-    if(dataTemp[i].value[3][0] in mapData)
-        mapData[dataTemp[i].value[3][0]] += dataTemp[i].value[2].length;
-    else
-        mapData[dataTemp[i].value[3][0]] = dataTemp[i].value[2].length;
-    if(dataTemp[i].value[3][1] in mapData)
-        mapData[dataTemp[i].value[3][1]] += dataTemp[i].value[2].length;
-    else
-        mapData[dataTemp[i].value[3][1]] = dataTemp[i].value[2].length;
 }
 
-// 连线，所有节点都和节点0连在一起
+// 映射数据
+// 省,市: 人数
+var mapData = {};
+for(var i=0;i<spotTemp.length;i++){
+    // 省
+    if(spotTemp[i].value[3][0] in mapData)
+        mapData[spotTemp[i].value[3][0]] += spotTemp[i].value[2].length;
+    else
+        mapData[spotTemp[i].value[3][0]] = spotTemp[i].value[2].length;
+    // 市
+    if(spotTemp[i].value[3][1] in mapData)
+        mapData[spotTemp[i].value[3][1]] += spotTemp[i].value[2].length;
+    else
+        mapData[spotTemp[i].value[3][1]] = spotTemp[i].value[2].length;
+}
+
+// map数据
+// name: 省或市 value: 人数
+var mapTemp = [[],[]];
+for(var i in mapData){
+    mapTemp[0].push({name:i,value:mapData[i]})
+}
+
+// link数据
+// source: 0 target: i
 var linksTemp = [];
-for (var i = 0; i < dataTemp.length; i++) {
+for (var i = 0; i < spotTemp.length; i++) {
     linksTemp.push({
         source: 0,
         target: i,
     });
+}
+
+// tree数据（AI的，没眼看）
+// 将数据处理成树状，如 山东(28)->济南市(12)->山东建筑大学(4)->某某某(1)
+// 树由name、value、数组children组成
+var treeTemp = [];
+for (var i = 0; i < spotTemp.length; i++) {
+    // 检查treeTemp里是否有name==spotTemp[i].value[3][0]
+    if (treeTemp.some(item => item.name === spotTemp[i].value[3][0]+'省')) {
+        // 如果有，则找到该省份，并添加一个城市
+        var index = treeTemp.findIndex(item => item.name === spotTemp[i].value[3][0]+'省');
+        treeTemp[index].value += spotTemp[i].value[2].length;
+        // 检查 children 里是否有name==spotTemp[i].value[3][1]
+        if (treeTemp[index].children.some(item => item.name === spotTemp[i].value[3][1])) {
+            // 如果有，则找到该城市，并添加一个学校
+            var index2 = treeTemp[index].children.findIndex(item => item.name === spotTemp[i].value[3][1]);
+            treeTemp[index].children[index2].value += spotTemp[i].value[2].length;
+            treeTemp[index].children[index2].children.push({
+                name: spotTemp[i].name,
+                value: spotTemp[i].value[2].length,
+                children: spotTemp[i].value[2].map(//学生
+                    (item,index)=>
+                    {return {name: item, value: 1}}
+                )
+            })
+        }
+        else {
+            // 如果没有，则添加一个城市
+            treeTemp[index].children.push({
+                name: spotTemp[i].value[3][1],
+                value: spotTemp[i].value[2].length,
+                children: [{//大学
+                    name: spotTemp[i].name,
+                    value: spotTemp[i].value[2].length,
+                    children: spotTemp[i].value[2].map(//学生
+                        (item,index)=>
+                        {return {name: item, value: 1}}
+                    )
+                }]
+            });
+        }
+    }
+    else{
+        // 如果没有，则添加一个省份
+        treeTemp.push({
+            name: spotTemp[i].value[3][0]+'省',
+            value: spotTemp[i].value[2].length,
+            children: [{//城市
+                name: spotTemp[i].value[3][1],
+                value: spotTemp[i].value[2].length,
+                children: [{//大学
+                    name: spotTemp[i].name,
+                    value: spotTemp[i].value[2].length,
+                    children: spotTemp[i].value[2].map(//学生
+                        (item,index)=>
+                        {return {name: item, value: 1}}
+                    )
+                }]
+            }]
+        });
+    }
 }
