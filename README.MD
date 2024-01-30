@@ -12,5 +12,5 @@
 
 #### 参与贡献
 
-1.  Fork 本仓库、Pull Request
+1.  Fork, Pull Request
 2.  联系我，共同完善：微信 鸿 wx1575989756

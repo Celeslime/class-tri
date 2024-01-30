@@ -32,6 +32,7 @@ var os = function () {
 }();
 
 var option = {
+    backgroundColor: borderColor,
     title:{
         top: 10,
         left: os.isPc?'center':10,
@@ -41,19 +42,17 @@ var option = {
             color: textColor,
             fontSize: 25,
             fontWeight: 'normal',
+            textShadowColor: borderColor,
+            textShadowBlur: 4
         },
         subtextStyle: {
             color: textColor,
             fontSize: 15,
-            fontWeight: 'normal',
+            textShadowColor: borderColor,
+            textShadowBlur: 4
         },
-        triggerEvent: true,
     },
-    textStyle: {
-        textBorderColor: borderColor,
-        textBorderWidth: 2,
-    },
-    backgroundColor: borderColor,
+    
     toolbox: {//工具栏
         top: os.isPc?10:undefined,
         bottom: os.isPc?undefined:10,
@@ -66,16 +65,13 @@ var option = {
             myReturn: {
                 // show: false,
                 title: '返回',
-                icon: 'image://./images/return.svg',
-                onclick: function () {
-                    if(parentMaps.length > 0) 
-                        changeMap(parentMaps.pop());
-                },
+                icon: 'image://./images/svg/return.svg',
+                onclick: popMaps,
             },
             myPositon: {
                 show: os.isPc,
                 title: '获取位置信息',
-                icon: 'image://./images/position.svg',
+                icon: 'image://./images/svg/position.svg',
                 onclick: function () {
                     if (navigator.geolocation && os.isPc)
                         navigator.geolocation.getCurrentPosition(successCallback);
@@ -96,7 +92,7 @@ var option = {
             },
             saveAsImage: {
                 title: '保存图片',
-                icon: 'image://./images/download.svg',
+                icon: 'image://./images/svg/download.svg',
                 pixelRatio: 7,
                 iconStyle:{
                     color: '#fff',
@@ -106,7 +102,7 @@ var option = {
             myQRCode: {
                 show: os.isPc,
                 title: 'QRCode',
-                icon: 'image://./images/QRCode.svg',
+                icon: 'image://./images/svg/QRCode.svg',
                 onclick: function(){
                     // 创建一个<a>标签
                     var link = document.createElement('a');
@@ -123,84 +119,32 @@ var option = {
             },
             myInfo: {
                 title: '关于',
-                icon: 'image://./images/info.svg',
-                onclick: function (){
-                    var answer=prompt(
-                        "关于：\n"+
-                        "    1. Trigger: 学校标记、地区地图等\n"+
-                        "    2. 长按或停留 Trigger 查看详细信息\n"+
-                        "    3. 点击 Trigger 进入下一级地图\n\n"+
-                        " - 图表使用 Echarts 制作\n"+
-                        " - 地图源于网络 不具有参考意义\n"+
-                        // " - https://github.com/celeslime/class-tri\n"+
-                        ' - $<HIDEN_MESSAGE="?">$\n'+
-                        " - 联系方式: 鸿 微信号："
-                    ,"wx1575989756"); 
-                    setTimeout(function(){
-                    if(answer=='wx1575989756'){
-                        return;
-                    }
-                    else if(answer=='sth' || answer=='史天鸿' || answer=='?' || answer=='？'){
-                        alert("请输入如下代码：\n"+
-                            " - 数据 (或 data)\n"+
-                            " - 世界 (或 world)\n"+
-                            " - 浏览器 (或 browser)\n"+
-                            ' - 项目 (或 github)\n'
-                        );
-                    }
-                    else if(answer=='data' || answer=='数据') {
-                        option.toolbox.feature.dataView.show = true;
-                        myChart.setOption(option);
-                    }
-                    else if(answer=='world' || answer=='世界') {
-                        parentMaps.push(option.geo.map);
-                        changeMap('world');
-                    }
-                    else if(answer=='browser' || answer=='浏览器') {
-                        alert('浏览器信息: \n'+navigator.userAgent)
-                    }
-                    else if(answer=='github' || answer=='项目') {
-                        window.open('https://github.com/celeslime/class-tri');
-                    }
-
-                    },1000)
-                }
+                icon: 'image://./images/svg/info.svg',
+                onclick: showInfo
             },
-        },
-        iconStyle: {
-            borderColor: borderColor,
-            color: textColor,
         },
         showTitle: false,
         tooltip:{
-            // show: os.isPc,
-            show: true,
+            show: os.isPc,
             position: os.isPc ? undefined : 'left',
-            position: undefined,
             formatter: function (param) {
-                if(param.title=='QRCode'){
+                if(param.title=='QRCode')
                     return '<img src="./images/QRCode.png" height="120px">'
-                }
-                return '<div>' + param.title + '</div>'; // 自定义的 DOM 结构
+                return '<div>' + param.title + '</div>';
             },
         },
-        emphasis:{
-            iconStyle:{
-                borderColor: borderColor,
-                color: activeColor,
-            }
-        },
+        iconStyle:{
+            shadowColor: borderColor,
+            shadowBlur: 4
+        }
     },
     tooltip: {//提示框
         hideDelay: 300,
         borderColor : '#fff',
     },
-    // labelLayout: {
-    //     hideOverlap: true,
-    // },
     geo: {//地图
         map: 'china',
-        label: {emphasis:{show: false}},
+        label: {formatter: ''},
         roam: true,//移动缩放
         scaleLimit: {
             min: 1,
@@ -210,6 +154,7 @@ var option = {
             areaColor: midColor(spotColor, mainColor, 0),
             borderColor: midColor(spotColor, mainColor, 2/5),
             // borderWidth: 0,
+            borderJoin: 'round',
         },
         emphasis: {
             itemStyle: {
@@ -220,10 +165,6 @@ var option = {
         tooltip: {
             position: os.isPc ? undefined:'top',
         },
-        // projection: {
-        //     project: (point) => [point[0] / 180 * Math.PI, -Math.log(Math.tan((Math.PI / 2 + point[1] / 180 * Math.PI) / 2))],
-        //     unproject: (point) => [point[0] * 180 / Math.PI, 2 * 180 / Math.PI * Math.atan(Math.exp(point[1])) - 90]
-        // }
     },
     series: [
         {
@@ -278,65 +219,63 @@ var option = {
             data: spotTemp,
             links: linksTemp,
         },
-        {
-            type: 'treemap',
-            name: '中华人民共和国',
-            data: treeTemp,
-            leafDepth: 2,
-            z:999,
-            upperLabel: {
-                show: true,
-                height: 30
-            },
-            itemStyle: {
-                // borderColor: '#555',
-                // color: textColor,
-                borderWidth: 2,
-                borderColorSaturation: 0.6
-            },
-            colorSaturation: [0.35, 0.5],
-            levels: [{//国
-                },{//省份
-                },{//城市
-                },{//学校
-                },{//学生
-                    itemStyle: {
-                        borderWidth: 0,
-                        // borderColorSaturation: 0.6
-                    }
-                }
-            ]
-        }
     ],
-    legend: {
-        show: false,
-        bottom: 10,
-        selected:{
-            '中华人民共和国':false,
-        }
-    },//图例：series拥有name时显示
 };
 changeMap();
-
+var optionTree = {
+    series:[{
+        type: 'treemap',
+        name: '中华人民共和国',
+        data: treeTemp,
+        leafDepth: 2,
+        z:999,
+        upperLabel: {
+            show: true,
+            height: 30
+        },
+        itemStyle: {
+            borderWidth: 2,
+            borderColorSaturation: 0.6
+        },
+        colorSaturation: [0.35, 0.5],
+        levels: [{//国
+            },{//省份
+            },{//城市
+            },{//学校
+            },{//学生
+                itemStyle: {
+                    borderWidth: 0,
+                    // borderColorSaturation: 0.6
+                }
+            }
+        ]
+    }]
+}
 // 改变地图
-function changeMap(newPlace = 'china') {
-    if(newPlace != 'china'){
-        var parentMapsTemp = parentMaps.concat();
-        parentMapsTemp[0] = ''
-        parentMapsTemp.push(newPlace)
-        // if(parentMapsTemp[1])parentMapsTemp[1]+='省'
-        option.title.subtext ='山师附中 2018 级 3 班 '
-            + parentMapsTemp.join(' > ')+(mapData[newPlace]?' > '+mapData[newPlace]+'人':'')
-        option.geo.zoom = 1;
-        option.geo.center = undefined;
-    }
-    else{
+function changeMap(newPlace = 'china', flag = true) {
+    if(newPlace == 'china'){
         option.title.subtext = '山东师范大学附属中学 2018 级 3 班';
         option.geo.zoom = 2.5;
         option.geo.center = [117,35.5];
     }
+    else{
+        var parentMapsTemp = parentMaps.concat();
+        parentMapsTemp[0] = ''
+        parentMapsTemp.push(newPlace)
+        option.title.subtext ='山师附中 2018 级 3 班 '
+            + parentMapsTemp.join(' > ')
+            + (mapData[newPlace]?' > '+mapData[newPlace]+'人':'')
+        option.geo.zoom = 1;
+        option.geo.center = undefined;
+    }
     option.geo.map = newPlace;
-    myChart.setOption(option, true);    //去除了roam动画
+    myChart.setOption(option, flag);    //去除了roam动画
+}
+function popMaps(){
+    if(parentMaps.length > 0) 
+        changeMap(parentMaps.pop());
+    else
+        changeMap('china',false);
 }
 
 // 按下
@@ -363,13 +302,45 @@ myChart.on('click', function (params) {
         }
         return;
     }
-    if (params.componentType === 'title'){
-        if(parentMaps.length > 0){
-            changeMap(parentMaps.pop());
-            return;
-        }
-    }
 });
+
+function showInfo(){
+    var answer = prompt(
+        "关于：\n"+
+        "    1. Trigger: 学校标记、地区地图等\n"+
+        "    2. 长按或停留 Trigger 查看详细信息\n"+
+        "    3. 点击 Trigger 进入下一级地图\n\n"+
+        " - 图表使用 Echarts 制作\n"+
+        " - 地图源于网络 不具参考意义\n"+
+        " - 联系方式: 鸿 微信号："
+        ,"wx1575989756"
+    ); 
+    if(answer=='wx1575989756'){
+        return;
+    }
+    else if(answer=='sth' || answer=='史天鸿' || answer=='?' || answer=='？'){
+        alert("请输入如下代码：\n"+
+            " - 数据 (或 data)\n"+
+            " - 世界 (或 world)\n"+
+            " - 浏览器 (或 browser)\n"+
+            ' - 项目 (或 github)\n'
+        );
+    }
+    else if(answer=='data' || answer=='数据') {
+        option.toolbox.feature.dataView.show = true;
+        myChart.setOption(option);
+    }
+    else if(answer=='world' || answer=='世界') {
+        parentMaps.push(option.geo.map);
+        changeMap('world');
+    }
+    else if(answer=='browser' || answer=='浏览器') {
+        alert('浏览器信息: \n'+navigator.userAgent)
+    }
+    else if(answer=='github' || answer=='项目') {
+        window.open('https://github.com/celeslime/class-tri');
+    }
+}
 
 // 获取我的位置
 function successCallback(position) {
@@ -411,7 +382,6 @@ function getTable(opt){
 }
 
 // 获取色阶  这一部分可以使用 visulMap + seriesIndex 实现
-//           下面是AI的, 本人比较懒, 不想重新写
 function midColor(color1, color2, weight) {
     var p = weight > 1 ? 1 : weight < 0 ? 0 : weight;
     var w1 = 0.04 + p * 0.4;
