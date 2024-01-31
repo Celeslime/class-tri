@@ -142,18 +142,14 @@ var option = {
         hideDelay: 300,
         borderColor : '#fff',
     },
-    geo: {//地图
+    geo: {
         map: 'china',
-        roam: true,//移动缩放，bug特别多，与很多内置功能冲突
-        // scaleLimit: {
-        //     min: .2,
-        //     max: 10,
-        // },
+        roam: true, //移动与缩放，bug特别多，与很多内置功能冲突
+        scaleLimit: {min: 1,max: 10},
         itemStyle: {
             areaColor: midColor(spotColor, mainColor, 0),
             borderColor: midColor(spotColor, mainColor, 2/5),
-            // borderWidth: 0,
-            borderJoin: 'round',
+            borderJoin: 'round', //去除毛刺，可以删掉
         },
         emphasis: {
             label:{
@@ -171,7 +167,7 @@ var option = {
     series: [
         {
             type: 'scatter',
-            // name: '学校',
+            // name: '学校', //会在tooltip上显示
             dimensions: ['经度','纬度','姓名','位置'],
             encode: {tooltip: [2,3]},
             coordinateSystem: 'geo',
@@ -280,7 +276,7 @@ function popMaps(){
         changeMap('china',false);
 }
 function mapReturn(){
-    if(option.geo.zoom != 1 && option.geo.map != 'china'){
+    if(myChart.getOption().geo[0].zoom != 1 && option.geo.map != 'china'){
         option.geo.zoom = 1;
         option.geo.center = undefined
         myChart.setOption(option);
@@ -320,7 +316,7 @@ myChart.on('click', function (params) {
             roamToMap(params.value[3][0]);
         }
         else{
-            superZoom(4,params.value.slice(0,2));
+            superZoom(2.5,params.value.slice(0,2));
         }
         return;
     }
@@ -399,7 +395,10 @@ function roamToMap(newPlace){
 
     option.geo.zoom = zoom*optionTemp.geo.zoom;
     option.geo.map = newPlace;
+
+    option.geo.scaleLimit = undefined; //有点讨厌
     myChart.setOption(option,true);
+    option.geo.scaleLimit = {min: 1,max: 10};
     changeMap(newPlace,false)
 }
 function superZoom(zoomTimes,center1){
