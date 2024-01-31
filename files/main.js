@@ -65,13 +65,13 @@ var option = {
             myReturn: {
                 // show: false,
                 title: '返回',
-                icon: 'image://./images/svg/return.svg',
+                icon: 'image://./images/Svg/return.svg',
                 onclick: popMaps,
             },
             myPositon: {
                 show: os.isPc,
                 title: '获取位置信息',
-                icon: 'image://./images/svg/position.svg',
+                icon: 'image://./images/Svg/position.svg',
                 onclick: function () {
                     if (navigator.geolocation && os.isPc)
                         navigator.geolocation.getCurrentPosition(successCallback);
@@ -92,7 +92,7 @@ var option = {
             },
             saveAsImage: {
                 title: '保存图片',
-                icon: 'image://./images/svg/download.svg',
+                icon: 'image://./images/Svg/download.svg',
                 pixelRatio: 7,
                 iconStyle:{
                     color: '#fff',
@@ -102,7 +102,7 @@ var option = {
             myQRCode: {
                 show: os.isPc,
                 title: 'QRCode',
-                icon: 'image://./images/svg/QRCode.svg',
+                icon: 'image://./images/Svg/QRCode.svg',
                 onclick: function(){
                     // 创建一个<a>标签
                     var link = document.createElement('a');
@@ -119,7 +119,7 @@ var option = {
             },
             myInfo: {
                 title: '关于',
-                icon: 'image://./images/svg/info.svg',
+                icon: 'image://./images/Svg/info.svg',
                 onclick: showInfo
             },
         },
