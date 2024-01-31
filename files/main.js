@@ -9,6 +9,7 @@ var parentMaps = new Array(); // 维护一个 array，用于记录地图路径
 var mainColor = rootStyles.getPropertyValue('--mainColor');
 var textColor = rootStyles.getPropertyValue('--textColor');
 var borderColor = rootStyles.getPropertyValue('--borderColor');
+var shadowColor = rootStyles.getPropertyValue('--shadowColor');
 var spotColor = rootStyles.getPropertyValue('--spotColor');
 var locSpotColor = rootStyles.getPropertyValue('--locSpotColor');
 var activeColor = rootStyles.getPropertyValue('--activeColor');
@@ -43,13 +44,13 @@ var option = {
             color: textColor,
             fontSize: 25,
             fontWeight: 'normal',
-            textShadowColor: borderColor,
+            textShadowColor: shadowColor,
             textShadowBlur: 4
         },
         subtextStyle: {
             color: textColor,
             fontSize: 15,
-            textShadowColor: borderColor,
+            textShadowColor: shadowColor,
             textShadowBlur: 4
         },
     },
@@ -134,7 +135,7 @@ var option = {
             },
         },
         iconStyle:{
-            shadowColor: borderColor,
+            shadowColor: shadowColor,
             shadowBlur: 4
         }
     },
@@ -501,6 +502,17 @@ function getRegionsColor(){
     })
     return regionsColor;
 }
+
+console.log(
+    "关于：\n"+
+    "    1. Trigger: 学校标记、地区地图等\n"+
+    "    2. 长按或停留 Trigger 查看详细信息\n"+
+    "    3. 点击 Trigger 进入下一级地图\n\n"+
+    " - 图表使用 Echarts 制作\n"+
+    " - 地图源于网络 不具参考意义\n"+
+    " - 联系方式: 鸿 微信号：wx1575989756\n"+
+    " - Github: https://github.com/celeslime/class-tri"
+);
 
 // function checkUrl() {
 //     var url = window.location.href;
