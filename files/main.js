@@ -1,5 +1,6 @@
 var chartDom = document.getElementById("main");
 var myChart = echarts.init(chartDom);
+var tempChart = echarts.init(document.getElementById("temp"));
 var rootStyles = getComputedStyle(document.documentElement);
 var parentMaps = new Array(); // 维护一个 array，用于记录地图路径
 // myChart.showLoading();
@@ -52,7 +53,6 @@ var option = {
             textShadowBlur: 4
         },
     },
-    
     toolbox: {//工具栏
         top: os.isPc?10:undefined,
         bottom: os.isPc?undefined:10,
@@ -66,7 +66,7 @@ var option = {
                 // show: false,
                 title: '返回',
                 icon: 'image://./images/Svg/return.svg',
-                onclick: popMaps,
+                onclick: mapReturn,
             },
             myPositon: {
                 show: os.isPc,
@@ -144,12 +144,11 @@ var option = {
     },
     geo: {//地图
         map: 'china',
-        label: {formatter: ''},
-        roam: true,//移动缩放
-        scaleLimit: {
-            min: 1,
-            max: 10,
-        },
+        roam: true,//移动缩放，bug特别多，与很多内置功能冲突
+        // scaleLimit: {
+        //     min: .2,
+        //     max: 10,
+        // },
         itemStyle: {
             areaColor: midColor(spotColor, mainColor, 0),
             borderColor: midColor(spotColor, mainColor, 2/5),
@@ -157,6 +156,9 @@ var option = {
             borderJoin: 'round',
         },
         emphasis: {
+            label:{
+                show: false,
+            },
             itemStyle: {
                 areaColor: activeColor,
             }
@@ -269,18 +271,26 @@ function changeMap(newPlace = 'china', flag = true) {
         option.geo.center = undefined;
     }
     option.geo.map = newPlace;
-    myChart.setOption(option, flag);    //去除了roam动画
+    myChart.setOption(option, flag); //去除了roam动画
 }
 function popMaps(){
     if(parentMaps.length > 0) 
-        changeMap(parentMaps.pop());
+        roamToMap(parentMaps.pop());
     else
         changeMap('china',false);
 }
-
+function mapReturn(){
+    if(option.geo.zoom != 1 && option.geo.map != 'china'){
+        option.geo.zoom = 1;
+        option.geo.center = undefined
+        myChart.setOption(option);
+    }else{
+        popMaps();
+    }
+}
 // 按下
 myChart.on('click', function (params) {
-    if (params.componentType === 'geo'){
+    if (params.componentType === 'geo'){//地图
         if (params.name == '南海诸岛') {
             params.name = '海南';
         }else if (params.name == 'China') {
@@ -288,19 +298,36 @@ myChart.on('click', function (params) {
         }
         if (echarts.getMap(params.name)) {
             parentMaps.push(option.geo.map);
-            changeMap(params.name);
+            roamToMap(params.name);
         }
         return;
     }
-    if (params.componentType === 'series' && params.seriesType === 'scatter') {
-        if (option.geo.map == 'china' && echarts.getMap(params.value[3][0])) {
+    if (params.componentType === 'series' && params.seriesType === 'scatter') {//scatter
+        if(params.seriesIndex == 1){//定位
+            superZoom(4,params.value.slice(0,2));
+            return;
+        }
+        if(option.geo.map == 'china' && echarts.getMap(params.value[3][0])){
             parentMaps.push(option.geo.map);
-            changeMap(params.value[3][0]);
-        }else if(option.geo.map == '山东' && params.value[3][1] == '济南市'){
+            roamToMap(params.value[3][0]);
+        }
+        else if(option.geo.map == '山东' && params.value[3][1] == '济南市'){
             parentMaps.push(option.geo.map);
-            changeMap('济南市');
+            roamToMap('济南市');
+        }
+        else if (option.geo.map != params.value[3][0] && echarts.getMap(params.value[3][0]) && params.value[3][1] != '济南市') {
+            parentMaps = ['china'];
+            roamToMap(params.value[3][0]);
+        }
+        else{
+            superZoom(4,params.value.slice(0,2));
         }
         return;
+    }
+});
+myChart.getZr().on('click', function(event) {// 点击在了空白处，做些什么。
+    if (!event.target) {
+        mapReturn();
     }
 });
 
@@ -339,6 +366,53 @@ function showInfo(){
     }
     else if(answer=='github' || answer=='项目') {
         window.open('https://github.com/celeslime/class-tri');
+    }
+}
+
+//获取Mychart当前中心坐标
+function getCenter(){
+    var center = myChart.convertFromPixel(
+        {seriesIndex: 0},
+        [myChart.getWidth()/2, myChart.getHeight()/2]
+    );
+    return center;
+}
+var optionTemp = {geo:{silent: true}}
+function roamToMap(newPlace){
+    option.geo.center = getCenter();
+
+    optionTemp.geo.map = newPlace;
+    optionTemp.geo.zoom = 1;
+    optionTemp.geo.center = undefined;
+    if(newPlace=='china'){
+        optionTemp.geo.zoom = 2.5;
+        optionTemp.geo.center = [117,35.5];
+    }
+    tempChart.setOption(optionTemp,true);
+
+    var start = [0,tempChart.getHeight()/2];
+    var end = [tempChart.getWidth(),tempChart.getHeight()/2];
+
+    var To_width = tempChart.convertFromPixel({geoIndex: 0},start)[0]-tempChart.convertFromPixel({geoIndex: 0},end)[0];
+    var From_width = myChart.convertFromPixel({geoIndex: 0},[0,0])[0]-myChart.convertFromPixel({geoIndex: 0},end)[0];
+    var zoom = To_width/From_width;
+
+    option.geo.zoom = zoom*optionTemp.geo.zoom;
+    option.geo.map = newPlace;
+    myChart.setOption(option,true);
+    changeMap(newPlace,false)
+}
+function superZoom(zoomTimes,center1){
+    var zoomRate = option.geo.zoom/zoomTimes;
+    if(option.geo.zoom != zoomTimes){
+        option.geo.zoom = zoomTimes;
+        var center2 = getCenter();
+        option.geo.center = [
+            center1[0]*(1-zoomRate) + center2[0]*zoomRate,
+            center1[1]*(1-zoomRate) + center2[1]*zoomRate
+        ];
+        myChart.setOption(option);
+        return;
     }
 }
 
