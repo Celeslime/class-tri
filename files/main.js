@@ -60,7 +60,7 @@ var option = {
         left: os.isPc?10:undefined,
         right: os.isPc?undefined:10,
         orient: os.isPc?'horizontal':'vertical',
-        itemSize: 24,
+        itemSize: 30,
         itemGap: 12,
         feature: {
             myReturn: {
@@ -221,6 +221,16 @@ var option = {
     ],
 };
 changeMap();
+console.log(
+    "关于：\n"+
+    "    1. Trigger: 学校标记、地区地图等\n"+
+    "    2. 长按或停留 Trigger 查看详细信息\n"+
+    "    3. 点击 Trigger 进入下一级地图\n\n"+
+    " - 图表使用 Echarts 制作\n"+
+    " - 地图源于网络 不具参考意义\n"+
+    " - 联系方式: 鸿 微信号：wx1575989756\n"+
+    " - Github: https://github.com/celeslime/class-tri"
+);
 var optionTree = {
     series:[{
         type: 'treemap',
@@ -366,45 +376,45 @@ function showInfo(){
     }
 }
 
-//获取Mychart当前中心坐标
-function getCenter(){
-    var center = myChart.convertFromPixel(
+//获取chart当前中心坐标
+function getCenter(chart = myChart){
+    var center = chart.convertFromPixel(
         {seriesIndex: 0},
-        [myChart.getWidth()/2, myChart.getHeight()/2]
+        [chart.getWidth()/2, chart.getHeight()/2]
     );
     return center;
 }
-var optionTemp = {geo:{silent: true}}
 function roamToMap(newPlace){
     option.geo.center = getCenter();
-
+    //tempChart要根据myChart的(center,coord)获取(center,zoom)
+    //首先，将optionTemp初始化
+    var optionTemp = {geo:{silent: true}}
     optionTemp.geo.map = newPlace;
     optionTemp.geo.zoom = 1;
-    optionTemp.geo.center = undefined;
     if(newPlace=='china'){
         optionTemp.geo.zoom = 2.5;
         optionTemp.geo.center = [117,35.5];
     }
     tempChart.setOption(optionTemp,true);
-
+    //获取zoom
     var start = [0,tempChart.getHeight()/2];
     var end = [tempChart.getWidth(),tempChart.getHeight()/2];
-
     var To_width = tempChart.convertFromPixel({geoIndex: 0},start)[0]-tempChart.convertFromPixel({geoIndex: 0},end)[0];
     var From_width = myChart.convertFromPixel({geoIndex: 0},[0,0])[0]-myChart.convertFromPixel({geoIndex: 0},end)[0];
     var zoom = To_width/From_width;
-
-    option.geo.zoom = zoom*optionTemp.geo.zoom;
+    //改变地图
     option.geo.map = newPlace;
-
-    option.geo.scaleLimit = undefined; //有点讨厌
+    option.geo.zoom = zoom * optionTemp.geo.zoom;
+    option.geo.scaleLimit = undefined; //临时取消限制
     myChart.setOption(option,true);
     option.geo.scaleLimit = {min: 1,max: 10};
+    //恢复为默认地图，启用动画
     changeMap(newPlace,false)
 }
 function superZoom(zoomTimes,center1){
+    option.geo.zoom = myChart.getOption().geo[0].zoom;
     var zoomRate = option.geo.zoom/zoomTimes;
-    if(option.geo.zoom != zoomTimes){
+    if(option.geo.zoom < zoomTimes){
         option.geo.zoom = zoomTimes;
         var center2 = getCenter();
         option.geo.center = [
@@ -412,7 +422,6 @@ function superZoom(zoomTimes,center1){
             center1[1]*(1-zoomRate) + center2[1]*zoomRate
         ];
         myChart.setOption(option);
-        return;
     }
 }
 
@@ -502,17 +511,6 @@ function getRegionsColor(){
     })
     return regionsColor;
 }
-
-console.log(
-    "关于：\n"+
-    "    1. Trigger: 学校标记、地区地图等\n"+
-    "    2. 长按或停留 Trigger 查看详细信息\n"+
-    "    3. 点击 Trigger 进入下一级地图\n\n"+
-    " - 图表使用 Echarts 制作\n"+
-    " - 地图源于网络 不具参考意义\n"+
-    " - 联系方式: 鸿 微信号：wx1575989756\n"+
-    " - Github: https://github.com/celeslime/class-tri"
-);
 
 // function checkUrl() {
 //     var url = window.location.href;
