@@ -1,6 +1,5 @@
 var chartDom = document.getElementById("main");
 var myChart = echarts.init(chartDom);
-var tempChart = echarts.init(document.getElementById("temp"));
 var rootStyles = getComputedStyle(document.documentElement);
 var parentMaps = new Array(); // 维护一个 array，用于记录地图路径
 // myChart.showLoading();
@@ -322,9 +321,15 @@ myChart.on('click', function (params) {
             parentMaps.push(option.geo.map);
             roamToMap('济南市');
         }
-        else if (option.geo.map != params.value[3][0] && echarts.getMap(params.value[3][0]) && params.value[3][1] != '济南市') {
-            parentMaps = ['china'];
-            roamToMap(params.value[3][0]);
+        else if(option.geo.map != params.value[3][1]) {//城市不同
+            if (option.geo.map != params.value[3][0] && echarts.getMap(params.value[3][0])) {
+                parentMaps = ['china'];
+                roamToMap(params.value[3][0]);
+            }
+            else if(echarts.getMap(params.value[3][1])){
+                parentMaps = ['china',params.value[3][0]];
+                roamToMap(params.value[3][1]);
+            }
         }
         else{
             superZoom(2.5,params.value.slice(0,2));
@@ -384,27 +389,20 @@ function getCenter(chart = myChart){
     );
     return center;
 }
+function getCoordWidth(chart = myChart){
+    var start = [0,chart.getHeight()/2];
+    var end = [chart.getWidth(),chart.getHeight()/2];
+    var top = chart.convertFromPixel({geoIndex: 0},start)[0];
+    var bottom = chart.convertFromPixel({geoIndex: 0},end)[0];
+    return bottom-top;
+}
 function roamToMap(newPlace){
-    option.geo.center = getCenter();
-    //tempChart要根据myChart的(center,coord)获取(center,zoom)
-    //首先，将optionTemp初始化
-    var optionTemp = {geo:{silent: true}}
-    optionTemp.geo.map = newPlace;
-    optionTemp.geo.zoom = 1;
-    if(newPlace=='china'){
-        optionTemp.geo.zoom = 2.5;
-        optionTemp.geo.center = [117,35.5];
-    }
-    tempChart.setOption(optionTemp,true);
-    //获取zoom
-    var start = [0,tempChart.getHeight()/2];
-    var end = [tempChart.getWidth(),tempChart.getHeight()/2];
-    var To_width = tempChart.convertFromPixel({geoIndex: 0},start)[0]-tempChart.convertFromPixel({geoIndex: 0},end)[0];
-    var From_width = myChart.convertFromPixel({geoIndex: 0},[0,0])[0]-myChart.convertFromPixel({geoIndex: 0},end)[0];
-    var zoom = To_width/From_width;
-    //改变地图
-    option.geo.map = newPlace;
-    option.geo.zoom = zoom * optionTemp.geo.zoom;
+    var From_width = getCoordWidth();
+    var centerTem = getCenter()
+    changeMap(newPlace,true)
+    var To_width = getCoordWidth();
+    option.geo.zoom *= To_width/From_width
+    option.geo.center = centerTem;
     option.geo.scaleLimit = undefined; //临时取消限制
     myChart.setOption(option,true);
     option.geo.scaleLimit = {min: 1,max: 10};
