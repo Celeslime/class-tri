@@ -330,6 +330,9 @@ myChart.on('click', function (params) {
                 parentMaps = ['china',params.value[3][0]];
                 roamToMap(params.value[3][1]);
             }
+            else{
+                superZoom(2.5,params.value.slice(0,2));
+            }
         }
         else{
             superZoom(2.5,params.value.slice(0,2));
