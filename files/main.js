@@ -6,12 +6,12 @@ var parentMaps = new Array(); // 维护一个 array，用于记录地图路径
 
 // 把css变量抓过来，方便修改
 var mainColor = rootStyles.getPropertyValue('--mainColor');
+var activeColor = rootStyles.getPropertyValue('--mapActiveColor');
 var textColor = rootStyles.getPropertyValue('--textColor');
-var borderColor = rootStyles.getPropertyValue('--borderColor');
+var borderColor = rootStyles.getPropertyValue('--backgroundColor');
 var shadowColor = rootStyles.getPropertyValue('--shadowColor');
 var spotColor = rootStyles.getPropertyValue('--spotColor');
 var locSpotColor = rootStyles.getPropertyValue('--locSpotColor');
-var activeColor = rootStyles.getPropertyValue('--activeColor');
 
 // 判断当前操作系统是否为移动设备
 var os = function () {
@@ -52,6 +52,7 @@ var option = {
             textShadowColor: shadowColor,
             textShadowBlur: 4
         },
+        zlevel: 1,
     },
     toolbox: {//工具栏
         top: os.isPc?10:undefined,
@@ -136,7 +137,8 @@ var option = {
         iconStyle:{
             shadowColor: shadowColor,
             shadowBlur: 4
-        }
+        },
+        zlevel: 1,
     },
     tooltip: {//提示框
         hideDelay: 300,
@@ -176,6 +178,9 @@ var option = {
             label: {
                 formatter: '{b}',
                 show: true,
+                color: textColor,
+                textBorderColor: 'inherit', //inside默认值，删除在深色背景会有bug
+                textBorderWidth: 2, //inside默认值，删除在深色背景会有bug
                 width: os.isPc? 80:40,
                 overflow: "truncate",
             },
@@ -216,8 +221,12 @@ var option = {
             silent: true,
             data: spotTemp,
             links: linksTemp,
+            show:false,
         },
     ],
+    legend: {
+        show: false,
+    }
 };
 changeMap();
 console.log(
@@ -253,12 +262,97 @@ var optionTree = {
             },{//学生
                 itemStyle: {
                     borderWidth: 0,
-                    // borderColorSaturation: 0.6
                 }
             }
         ]
     }]
 }
+const colors = ['#FFAE57', '#FF7853', '#EA5151', '#CC3F57', '#9A2555'];
+// const bgColor = '#2E2733';
+var optionSun = {
+    // backgroundColor: bgColor,
+    // color: colors,
+    geo:{
+        show:false
+    },
+    series: [{
+        type: 'sunburst',
+        // center: ['50%', '48%'],
+        data: treeTemp,
+        // sort: function (a, b) {
+        //   if (a.depth === 1) {
+        //     return b.getValue() - a.getValue();
+        //   } else {
+        //     return a.dataIndex - b.dataIndex;
+        //   }
+        // },
+        label: {
+        //   rotate: 'radial',
+          color: '#fff'
+        },
+        itemStyle: {
+            //透明的borderColor
+            borderColor: borderColor,
+            borderRadius: 3,
+            borderWidth: 1
+        },
+        zlevel: 2,
+        levels: [
+          {},
+          {
+            r0: 0,
+            r: 30,
+            label: {
+                width: 30,
+                overflow: "truncate",
+            }
+          },
+          {
+            r0: 30,
+            r: 60,
+            label: {
+                width: 30,
+                overflow: "truncate",
+            }
+          },
+          {
+            r0: 60,
+            r: 140,
+            // itemStyle: {
+            //   shadowBlur: 2,
+            //   shadowColor: colors[2],
+            //   color: 'transparent'
+            // },
+            label: {
+            //   rotate: 'tangential',
+            //   fontSize: 10,
+            //   color: colors[0]
+                width: 80,
+                overflow: "truncate",
+            }
+          },
+          {
+            r0: 140,
+            r: 145,
+            // itemStyle: {
+            //   shadowBlur: 80,
+            //   shadowColor: colors[0]
+            // },
+            label: {
+              position: 'outside',
+            //   textShadowBlur: 5,
+            //   textShadowColor: '#333'
+            },
+            // downplay: {
+            //   label: {
+            //     opacity: 0.5
+            //   }
+            // }
+          }
+        ]
+    }]
+};
+// myChart.setOption(optionSun)
 // 改变地图
 function changeMap(newPlace = 'china', flag = true) {
     if(newPlace == 'china'){
@@ -269,10 +363,10 @@ function changeMap(newPlace = 'china', flag = true) {
     else{
         var parentMapsTemp = parentMaps.concat();
         parentMapsTemp[0] = ''
-        parentMapsTemp.push(newPlace)
-        option.title.subtext ='山师附中 2018 级 3 班 '
-            + parentMapsTemp.join(' > ')
-            + (mapData[newPlace]?' > '+mapData[newPlace]+'人':'')
+        parentMapsTemp.push(newPlace=='济南市'?'济南':newPlace)
+        option.title.subtext ='山师附中 2018 级 3 班'
+            + parentMapsTemp.join(' ')
+            + (mapData[newPlace]?' '+mapData[newPlace]+' 人':'')
         option.geo.zoom = 1;
         option.geo.center = undefined;
     }

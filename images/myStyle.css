@@ -1,12 +1,20 @@
 :root {
-	/* 变量和颜色之间不要空格，否则老版本浏览器解析错误 */
-	--mainColor:#f3f8ff;
-	--textColor:#ffffff;
-	--borderColor:#06dce3;
-	--shadowColor:#07c7ce;
+	/* 冒号和井号之间不要空格，否则老版本浏览器解析错误 */
+	/* 坐标点及当前定位点颜色 */
 	--spotColor:#ff5b2ecc;
 	--locSpotColor:#ff2e2ecc;
-	--activeColor:#ffffff;
+
+	/* 地图颜色 */
+	/* tips: 地图实际颜色根据数据介于spotColor与mainColor之间 */
+	--mapActiveColor:#ffffff; /* 地图hover颜色 */
+	--mainColor:#f3f8ff; 
+
+	/* 标题颜色 */
+	--textColor:#ffffff;
+	--shadowColor:#07c7ce;
+
+	/* 背景颜色 */
+	--backgroundColor:#06dce3;
 }
 h4{
 	color: #535353!important;
