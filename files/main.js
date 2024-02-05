@@ -228,7 +228,7 @@ var option = {
         show: false,
     }
 };
-changeMap();
+changeMap(checkUrl());
 console.log(
     "关于：\n"+
     "    1. Trigger: 学校标记、地区地图等\n"+
@@ -359,6 +359,8 @@ function changeMap(newPlace = 'china', flag = true) {
         option.title.subtext = '山东师范大学附属中学 2018 级 3 班';
         option.geo.zoom = 2.5;
         option.geo.center = [117,35.5];
+        document.title = '毕业蹭饭地图 | 山师附中 2018 级 3 班';
+        window.location.hash = '';
     }
     else{
         var parentMapsTemp = parentMaps.concat();
@@ -369,6 +371,8 @@ function changeMap(newPlace = 'china', flag = true) {
             + (mapData[newPlace]?' '+mapData[newPlace]+' 人':'')
         option.geo.zoom = 1;
         option.geo.center = undefined;
+        document.title = '毕业蹭饭地图 | '+newPlace;
+        window.location.hash = newPlace;
     }
     option.geo.map = newPlace;
     myChart.setOption(option, flag); //去除了roam动画
@@ -607,18 +611,14 @@ function getRegionsColor(){
     return regionsColor;
 }
 
-// function checkUrl() {
-//     var url = window.location.href;
-//     if (url.indexOf('#') == -1) return 'china';
-//     option.geo.zoom = 1;
-//     option.geo.left = 'center';
-//     place = url.substring(url.indexOf('#') + 1);
-//     place = decodeURI(place);
-//     console.log(place);
-//     if (MAPS.indexOf(place) != -1) {
-//         parentMaps.push('china');
-//         return place;
-//     }
-//     else return 'china';
-// };
-// option.geo.map = checkUrl();
+function checkUrl() {
+    var url = window.location.hash;
+    if (url == '') return 'china';
+    place = decodeURI(url.slice(1));
+    console.log(place);
+    if (echarts.getMap(place)){
+        parentMaps.push('china');
+        return place;
+    }
+    else return 'china';
+};
