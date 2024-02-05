@@ -371,7 +371,7 @@ function changeMap(newPlace = 'china', flag = true) {
             + (mapData[newPlace]?' '+mapData[newPlace]+' 人':'')
         option.geo.zoom = 1;
         option.geo.center = undefined;
-        document.title = '毕业蹭饭地图 | '+newPlace;
+        document.title = '毕业蹭饭地图 - '+newPlace+' | 山师附中 2018 级 3 班';
         window.location.hash = newPlace;
     }
     option.geo.map = newPlace;
@@ -618,6 +618,8 @@ function checkUrl() {
     console.log(place);
     if (echarts.getMap(place)){
         parentMaps.push('china');
+        if (place == '济南市')
+            parentMaps.push('山东');
         return place;
     }
     else return 'china';
