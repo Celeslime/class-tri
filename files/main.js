@@ -231,9 +231,9 @@ var option = {
 changeMap(checkUrl());
 console.log(
     "关于：\n"+
-    "    1. Trigger: 学校标记、地区地图等\n"+
-    "    2. 长按或停留 Trigger 查看详细信息\n"+
-    "    3. 点击 Trigger 进入下一级地图\n\n"+
+    "    1. 元素: 学校标记、地区地图等\n"+
+    "    2. 长按或停留 元素 查看详细信息\n"+
+    "    3. 点击 元素 进入下一级地图\n\n"+
     " - 图表使用 Echarts 制作\n"+
     " - 地图源于网络 不具参考意义\n"+
     " - 联系方式: 鸿 微信号：wx1575989756\n"+
@@ -268,7 +268,6 @@ var optionTree = {
     }]
 }
 const colors = ['#FFAE57', '#FF7853', '#EA5151', '#CC3F57', '#9A2555'];
-// const bgColor = '#2E2733';
 var optionSun = {
     // backgroundColor: bgColor,
     // color: colors,
@@ -447,9 +446,9 @@ myChart.getZr().on('click', function(event) {// 点击在了空白处，做些�
 function showInfo(){
     var answer = prompt(
         "关于：\n"+
-        "    1. Trigger: 学校标记、地区地图等\n"+
-        "    2. 长按或停留 Trigger 查看详细信息\n"+
-        "    3. 点击 Trigger 进入下一级地图\n\n"+
+        "    1. 元素: 学校标记、地区地图等\n"+
+        "    2. 长按或停留 元素 查看详细信息\n"+
+        "    3. 点击 元素 进入下一级地图\n\n"+
         " - 图表使用 Echarts 制作\n"+
         " - 地图源于网络 不具参考意义\n"+
         " - 联系方式: 鸿 微信号："
