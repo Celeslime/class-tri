@@ -1,7 +1,6 @@
 var chartDom = document.getElementById("main");
 var myChart = echarts.init(chartDom);
 var rootStyles = getComputedStyle(document.documentElement);
-var parentMaps = new Array(); // 维护一个 array，用于记录地图路径
 // myChart.showLoading();
 
 // 把css变量抓过来，方便修改
@@ -67,7 +66,10 @@ var option = {
                 // show: false,
                 title: '返回',
                 icon: 'image://./images/Svg/return.svg',
-                onclick: mapReturn,
+                onclick: function(){
+                    setInitZoom(option.geo.map);
+                    myChart.setOption(option)
+                },
             },
             myPositon: {
                 show: os.isPc,
@@ -351,46 +353,71 @@ var optionSun = {
         ]
     }]
 };
-// myChart.setOption(optionSun)
-// 改变地图
+// --------------------------------------------------------改变地图
+window.addEventListener(
+    "hashchange",
+    function () {
+        var place = checkUrl();
+        console.log(">>> The hash change to: " + place);
+        roamToMap(place)
+    },
+    false,
+);
+function checkUrl() {
+    var url = window.location.hash;
+    if (url == '') return 'china';
+    place = decodeURI(url.slice(1));
+    if (echarts.getMap(place)){
+        return place;
+    }
+    else return 'china';
+};
 function changeMap(newPlace = 'china', flag = true) {
+    setInitZoom(newPlace);
     if(newPlace == 'china'){
         option.title.subtext = '山东师范大学附属中学 2018 级 3 班';
-        option.geo.zoom = 2.5;
-        option.geo.center = [117,35.5];
         document.title = '毕业蹭饭地图 | 山师附中 2018 级 3 班';
-        window.location.hash = '';
     }
     else{
-        var parentMapsTemp = parentMaps.concat();
-        parentMapsTemp[0] = ''
-        parentMapsTemp.push(newPlace=='济南市'?'济南':newPlace)
-        option.title.subtext ='山师附中 2018 级 3 班'
-            + parentMapsTemp.join(' ')
+        option.title.subtext ='山师附中 2018 级 3 班 '
+            + (newPlace=='济南市'?'山东 济南':newPlace)
             + (mapData[newPlace]?' '+mapData[newPlace]+' 人':'')
-        option.geo.zoom = 1;
-        option.geo.center = undefined;
         document.title = '毕业蹭饭地图 - '+newPlace+' | 山师附中 2018 级 3 班';
-        window.location.hash = newPlace;
     }
     option.geo.map = newPlace;
     myChart.setOption(option, flag); //去除了roam动画
 }
 function popMaps(){
-    if(parentMaps.length > 0) 
-        roamToMap(parentMaps.pop());
-    else
-        changeMap('china',false);
-}
-function mapReturn(){
-    if(myChart.getOption().geo[0].zoom != 1 && option.geo.map != 'china'){
-        option.geo.zoom = 1;
-        option.geo.center = undefined
-        myChart.setOption(option);
-    }else{
-        popMaps();
+    if(option.geo.map != 'china') {
+        window.history.back();
+    }
+    else{
+        roamToMap('china')
     }
 }
+function roamToMap(newPlace){
+    var From_width = getCoordWidth();
+    var centerTem = getCenter()
+    changeMap(newPlace,true)
+    var To_width = getCoordWidth();
+    option.geo.zoom *= To_width/From_width
+    option.geo.center = centerTem;
+    option.geo.scaleLimit = undefined; //临时取消限制
+    myChart.setOption(option,true);
+    option.geo.scaleLimit = {min: 1,max: 10};
+    //恢复为默认地图，启用动画
+    changeMap(newPlace,false)
+}
+function setInitZoom(place){
+    if(place == 'china'){
+        option.geo.zoom = 2.5;
+        option.geo.center = [117,35.5];
+    }else{
+        option.geo.zoom = 1;
+        option.geo.center = undefined;
+    }
+}
+// --------------------------------------------------------
 // 按下
 myChart.on('click', function (params) {
     if (params.componentType === 'geo'){//地图
@@ -400,8 +427,7 @@ myChart.on('click', function (params) {
             params.name = 'china';
         }
         if (echarts.getMap(params.name)) {
-            parentMaps.push(option.geo.map);
-            roamToMap(params.name);
+            window.location.hash = params.name;
         }
         return;
     }
@@ -411,21 +437,17 @@ myChart.on('click', function (params) {
             return;
         }
         if(option.geo.map == 'china' && echarts.getMap(params.value[3][0])){
-            parentMaps.push(option.geo.map);
-            roamToMap(params.value[3][0]);
+            window.location.hash = params.value[3][0];
         }
         else if(option.geo.map == '山东' && params.value[3][1] == '济南市'){
-            parentMaps.push(option.geo.map);
-            roamToMap('济南市');
+            window.location.hash = '济南市';
         }
         else if(option.geo.map != params.value[3][1]) {//城市不同
             if (option.geo.map != params.value[3][0] && echarts.getMap(params.value[3][0])) {
-                parentMaps = ['china'];
-                roamToMap(params.value[3][0]);
+                window.location.hash = params.value[3][0];
             }
             else if(echarts.getMap(params.value[3][1])){
-                parentMaps = ['china',params.value[3][0]];
-                roamToMap(params.value[3][1]);
+                window.location.hash = params.value[3][1];
             }
             else{
                 superZoom(2.5,params.value.slice(0,2));
@@ -437,9 +459,10 @@ myChart.on('click', function (params) {
         return;
     }
 });
-myChart.getZr().on('click', function(event) {// 点击在了空白处，做些什么。
+myChart.getZr().on('click', function(event) {// 点击在了空白处
     if (!event.target) {
-        mapReturn();
+        setInitZoom(option.geo.map);
+        myChart.setOption(option)
     }
 });
 
@@ -470,8 +493,7 @@ function showInfo(){
         myChart.setOption(option);
     }
     else if(answer=='world' || answer=='世界') {
-        parentMaps.push(option.geo.map);
-        changeMap('world');
+        window.location.hash = 'world';
     }
     else if(answer=='browser' || answer=='浏览器') {
         alert('浏览器信息: \n'+navigator.userAgent)
@@ -495,19 +517,6 @@ function getCoordWidth(chart = myChart){
     var top = chart.convertFromPixel({geoIndex: 0},start)[0];
     var bottom = chart.convertFromPixel({geoIndex: 0},end)[0];
     return bottom-top;
-}
-function roamToMap(newPlace){
-    var From_width = getCoordWidth();
-    var centerTem = getCenter()
-    changeMap(newPlace,true)
-    var To_width = getCoordWidth();
-    option.geo.zoom *= To_width/From_width
-    option.geo.center = centerTem;
-    option.geo.scaleLimit = undefined; //临时取消限制
-    myChart.setOption(option,true);
-    option.geo.scaleLimit = {min: 1,max: 10};
-    //恢复为默认地图，启用动画
-    changeMap(newPlace,false)
 }
 function superZoom(zoomTimes,center1){
     option.geo.zoom = myChart.getOption().geo[0].zoom;
@@ -609,17 +618,3 @@ function getRegionsColor(){
     })
     return regionsColor;
 }
-
-function checkUrl() {
-    var url = window.location.hash;
-    if (url == '') return 'china';
-    place = decodeURI(url.slice(1));
-    console.log(place);
-    if (echarts.getMap(place)){
-        parentMaps.push('china');
-        if (place == '济南市')
-            parentMaps.push('山东');
-        return place;
-    }
-    else return 'china';
-};

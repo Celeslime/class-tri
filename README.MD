@@ -5,9 +5,9 @@
 网址： [https://celeslime.github.io/class-tri/](https://celeslime.github.io/class-tri/)
 
 #### 效果展示
-<center class="half">
-  <img src="https://s11.ax1x.com/2024/02/06/pF1udkd.png" style="max-height: 300px;" />
-  <img src="https://s11.ax1x.com/2024/02/06/pF1uUTH.png" style="max-height: 300px;" />
+<center>
+  <img src="https://s11.ax1x.com/2024/02/06/pF1uUTH.png" height=400/>
+  <img src="https://s11.ax1x.com/2024/02/06/pF1udkd.png" />
 </center>
 
 #### 使用说明
