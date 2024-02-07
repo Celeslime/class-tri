@@ -66,10 +66,7 @@ var option = {
                 // show: false,
                 title: '返回',
                 icon: 'image://./images/Svg/return.svg',
-                onclick: function(){
-                    setInitZoom(option.geo.map);
-                    myChart.setOption(option)
-                },
+                onclick: returnMap,
             },
             myPositon: {
                 show: os.isPc,
@@ -408,6 +405,15 @@ function roamToMap(newPlace){
     //恢复为默认地图，启用动画
     changeMap(newPlace,false)
 }
+function returnMap(){
+    setInitZoom(option.geo.map);
+    if( myChart.getOption().geo[0].zoom  == option.geo.zoom
+     && myChart.getOption().geo[0].center== option.geo.center){
+        window.history.back();
+        return;
+    }
+    myChart.setOption(option);
+}
 function setInitZoom(place){
     if(place == 'china'){
         option.geo.zoom = 2.5;
@@ -461,8 +467,7 @@ myChart.on('click', function (params) {
 });
 myChart.getZr().on('click', function(event) {// 点击在了空白处
     if (!event.target) {
-        setInitZoom(option.geo.map);
-        myChart.setOption(option)
+        returnMap();
     }
 });
 
@@ -605,7 +610,6 @@ function getRegionsColor(){
                         + params.name 
                         + '<span style="float:right;margin-left:20px;font-size:14px;color:#666;font-weight:900">' 
                         + mapData[params.name] + '人</span>';
-                    // return params.name + '&nbsp&nbsp<b>' + mapData[params.name] + '人</b>';
                 }
             }
         });
