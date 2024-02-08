@@ -64,9 +64,11 @@ var option = {
         feature: {
             myReturn: {
                 // show: false,
-                title: '返回',
+                title: '主页',
                 icon: 'image://./images/Svg/return.svg',
-                onclick: returnMap,
+                onclick: function(){
+                    window.location.hash = ''
+                },
             },
             myPositon: {
                 show: os.isPc,
@@ -407,11 +409,11 @@ function roamToMap(newPlace){
 }
 function returnMap(){
     setInitZoom(option.geo.map);
-    if( myChart.getOption().geo[0].zoom  == option.geo.zoom
-     && myChart.getOption().geo[0].center== option.geo.center){
-        window.history.back();
-        return;
-    }
+    // if( myChart.getOption().geo[0].zoom  == option.geo.zoom
+    //  && myChart.getOption().geo[0].center== option.geo.center){
+    //     window.history.back();
+    //     return;
+    // }
     myChart.setOption(option);
 }
 function setInitZoom(place){
